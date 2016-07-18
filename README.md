@@ -2,7 +2,7 @@
 ### Start
     1. Import libs/light-android-annotation.jar to your project.
     2. Invoke Injector.inject(Object extends Activity or View or Fragment) Or Injector.inject(Object, View)
-    4. Enjoy.
+    3. Enjoy.
 ### Usage Example
 ```java
 @FullScreen
