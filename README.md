@@ -1,9 +1,9 @@
 # LightAndroidAnnotation
-
+### Start
     1. Import libs/light-android-annotation.jar to your project.
     2. Invoke Injector.inject(Object extends Activity or View or Fragment) Or Injector.inject(Obj, view)
     4. Enjoy.
-
+### Usage Example
 ```java
 @FullScreen
 @OrientationPortrait
@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
     }
 }
 ```
-
+###Supported Annotations
 ```java
 AfterTextChanged
 BeforeTextChanged
