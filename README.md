@@ -1,8 +1,8 @@
 # LightAndroidAnnotation
 
-    1. import libs/light-android-annotation.jar to your project.
-    2. After setContentView() invoke Injector.inject(obj extends Activity or View or Fragment)
-    3. or Injector.inject(Obj, view)
+    1. Import libs/light-android-annotation.jar to your project.
+    2. Invoke Injector.inject(obj extends Activity or View or Fragment)
+    3. Or Injector.inject(Obj, view)
     4. Enjoy.
 
 ```java
