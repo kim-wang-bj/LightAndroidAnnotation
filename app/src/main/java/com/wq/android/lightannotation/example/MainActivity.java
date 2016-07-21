@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         Injector.DEBUG = true;
         Injector.inject(this);
+        getFragmentManager().beginTransaction().add(new MyFragment(), "").commit();
     }
 
     @AfterTextChanged(R.id.edit_text)

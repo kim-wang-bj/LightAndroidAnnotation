@@ -533,21 +533,23 @@ public class Injector {
         }
     }
 
-    private static Context getContext(Method method, Object obj, View view) {
+    private static Context getContext(Method method, Object obj, View view) throws Exception {
         if (obj instanceof Activity) {
             return ((Activity) obj).getApplicationContext();
-        }
-        if (obj instanceof Fragment) {
-            return ((Fragment) obj).getView().getContext();
-        }
-        if (obj instanceof android.support.v4.app.Fragment) {
-            return ((android.support.v4.app.Fragment) obj).getView().getContext();
         }
         if (obj instanceof View) {
             return ((View) obj).getContext();
         }
         if (view != null) {
             return view.getContext();
+        }
+        if (obj instanceof Fragment) {
+            Fragment fragment = ((Fragment) obj);
+            return fragment.getActivity().getApplicationContext();
+        }
+        if (obj instanceof android.support.v4.app.Fragment) {
+            android.support.v4.app.Fragment fragment = ((android.support.v4.app.Fragment) obj);
+            return fragment.getActivity().getApplicationContext();
         }
         return null;
     }
