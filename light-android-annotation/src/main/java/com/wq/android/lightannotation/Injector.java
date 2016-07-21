@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.view.ViewPager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -73,6 +74,7 @@ public class Injector {
                 injectOnDraw(method, obj, view);
                 injectOnGlobalLayout(method, obj, view);
                 injectOnScrollChanged(method, obj, view);
+                injectOnPageChanged(method, obj, view);
             }
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
@@ -414,6 +416,32 @@ public class Injector {
         }
     }
 
+    private static Map<View, MyOnPageChangeListener> pageChangedListenerMap = new WeakHashMap<View, MyOnPageChangeListener>();
+
+    private static void injectOnPageChanged(final Method method, final Object obj, View view) throws Exception {
+        Map<Annotation, Method> annotationMethodMap = new HashMap<Annotation, Method>();
+        annotationMethodMap.put(method.getAnnotation(OnPageScrolled.class), method);
+        annotationMethodMap.put(method.getAnnotation(OnPageSelected.class), method);
+        annotationMethodMap.put(method.getAnnotation(OnPageScrollStateChanged.class), method);
+
+        for (Annotation annotation : annotationMethodMap.keySet()) {
+            if (annotation == null) {
+                continue;
+            }
+            int[] ids = (int[]) annotation.getClass().getDeclaredMethod("value").invoke(annotation);
+            for (final int id : ids) {
+                ViewPager v = (ViewPager) getView(obj, view, id);
+                MyOnPageChangeListener listener = pageChangedListenerMap.get(v);
+                if (listener == null) {
+                    listener = new MyOnPageChangeListener(obj, v);
+                    pageChangedListenerMap.put(v, listener);
+                }
+                listener.putMethod(annotation.annotationType(), method);
+                v.addOnPageChangeListener(listener);
+            }
+        }
+    }
+
     private static Map<View, MyItemSelectedListener> itemSelectedListenerMap = new WeakHashMap<View, MyItemSelectedListener>();
 
     private static void injectOnItemSelected(final Method method, final Object obj, View view) throws Exception {
@@ -509,6 +537,12 @@ public class Injector {
         if (obj instanceof Activity) {
             return ((Activity) obj).getApplicationContext();
         }
+        if (obj instanceof Fragment) {
+            return ((Fragment) obj).getView().getContext();
+        }
+        if (obj instanceof android.support.v4.app.Fragment) {
+            return ((android.support.v4.app.Fragment) obj).getView().getContext();
+        }
         if (obj instanceof View) {
             return ((View) obj).getContext();
         }
@@ -516,6 +550,28 @@ public class Injector {
             return view.getContext();
         }
         return null;
+    }
+
+    private static class MyOnPageChangeListener extends BaseListener implements ViewPager.OnPageChangeListener {
+
+        MyOnPageChangeListener(Object obj, View view) {
+            super(obj, view);
+        }
+
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            innerInvoke(OnPageScrolled.class, view.get(), position, positionOffset, positionOffsetPixels);
+        }
+
+        @Override
+        public void onPageSelected(int position) {
+            innerInvoke(OnPageSelected.class, view.get(), position);
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int state) {
+            innerInvoke(OnPageScrollStateChanged.class, view.get(), state);
+        }
     }
 
     private static class MyItemSelectedListener extends BaseListener implements AdapterView.OnItemSelectedListener {

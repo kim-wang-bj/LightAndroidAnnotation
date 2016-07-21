@@ -10,16 +10,16 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link android.text.TextWatcher#beforeTextChanged(CharSequence, int, int, int)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;BeforeTextChanged(R.id.id1, R.id.id2)
  * private void beforeTextChanged(View, CharSequence, int, int, int)
  * {
  * }
- * 
+ *
  * </pre>
  */
 
@@ -27,5 +27,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BeforeTextChanged {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

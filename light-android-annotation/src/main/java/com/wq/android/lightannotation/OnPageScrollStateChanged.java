@@ -1,5 +1,6 @@
 package com.wq.android.lightannotation;
 
+import android.support.v4.view.ViewPager;
 import android.view.View;
 
 import java.lang.annotation.Documented;
@@ -10,18 +11,21 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * See: {@link android.view.GestureDetector.SimpleOnGestureListener#onShowPress(android.view.MotionEvent)}
+ *
+ * See: {@link ViewPager#addOnPageChangeListener(ViewPager.OnPageChangeListener)}
  *
  * Usage Example:
  *
- * &#064;OnShowPress({ R.id.id1, R.id.id2 })
- * private void onShowPress(View v, MotionEvent e) {
+ * &#064;OnPageScrollStateChanged({R.id.viewId})
+ * private void onPageScrollStateChanged(View v, int state)
+ * {
  * }
+ *
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OnShowPress {
+public @interface OnPageScrollStateChanged {
     int[] value() default View.NO_ID;
 }

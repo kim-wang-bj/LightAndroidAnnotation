@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * Usage Example:
  *
  * &#064;OnClick({R.id.viewId})
- * private boolean onClick(View v)
+ * private void onClick(View v)
  * {
  * }
  *

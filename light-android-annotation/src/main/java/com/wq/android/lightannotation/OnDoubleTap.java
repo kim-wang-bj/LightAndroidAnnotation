@@ -11,9 +11,9 @@ import java.lang.annotation.Target;
 /**
  * <pre>
  * See: {@link android.view.GestureDetector.SimpleOnGestureListener#onDoubleTap(android.view.MotionEvent)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnDoubleTap(R.id.id1, R.id.id2)
  * private boolean onDoubleTap(View v, MotionEvent e)
  * {
@@ -23,6 +23,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OnDoubleTap{
-	public int[] value() default View.NO_ID;
+public @interface OnDoubleTap {
+    int[] value() default View.NO_ID;
 }

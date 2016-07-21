@@ -10,22 +10,21 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link android.view.View#setOnLongClickListener(android.view.View.OnLongClickListener)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnLongClick({R.id.viewId})
  * public boolean onLongClick(View v)
  * {
  * }
- * 
+ *
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OnLongClick
-{
-	public int[] value() default View.NO_ID;
+public @interface OnLongClick {
+    int[] value() default View.NO_ID;
 }

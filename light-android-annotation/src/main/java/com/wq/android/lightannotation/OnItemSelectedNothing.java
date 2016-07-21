@@ -10,22 +10,22 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link android.widget.ListView#setOnItemSelectedListener(android.widget.AdapterView.OnItemSelectedListener)}
  * See: {@link android.widget.AdapterView.OnItemSelectedListener#onNothingSelected(android.widget.AdapterView)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnItemSelectedNothing({R.id.viewId})
  * private void onItemSelectedNothing(android.widget.AdapterView view)
  * {
  * }
- * 
+ *
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnItemSelectedNothing {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

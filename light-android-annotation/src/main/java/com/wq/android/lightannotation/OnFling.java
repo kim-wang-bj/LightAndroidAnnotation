@@ -11,9 +11,9 @@ import java.lang.annotation.Target;
 /**
  * <pre>
  * See: {@link android.view.GestureDetector.SimpleOnGestureListener#onFling(android.view.MotionEvent, android.view.MotionEvent, float, float)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnFling({R.id.id1, R.id.id2 })
  * private boolean onFling(View v, MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
  * {
@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnFling {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

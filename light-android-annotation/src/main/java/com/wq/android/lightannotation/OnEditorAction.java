@@ -32,6 +32,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnEditorAction {
-    public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }
 

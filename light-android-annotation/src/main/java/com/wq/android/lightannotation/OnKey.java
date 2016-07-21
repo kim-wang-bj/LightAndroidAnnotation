@@ -10,22 +10,21 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link android.view.View#setOnKeyListener(android.view.View.OnKeyListener)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnKey({R.id.viewId})
  * public void onKey(View v, int keyCode, KeyEvent event)
  * {
  * }
- * 
+ *
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OnKey
-{
-	public int[] value() default View.NO_ID;
+public @interface OnKey {
+    int[] value() default View.NO_ID;
 }

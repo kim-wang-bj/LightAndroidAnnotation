@@ -9,11 +9,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *  <pre>
+ * <pre>
  * See: {@link android.view.GestureDetector.SimpleOnGestureListener#onSingleTapConfirmed(android.view.MotionEvent)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnSingleTapConfirmed({ R.id.id1, R.id.id2 })
  * private boolean onSingleTapConfirmed(View v, MotionEvent e)
  * {
@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnSingleTapConfirmed {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

@@ -10,21 +10,21 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link android.view.View#getViewTreeObserver}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnPreDraw({R.id.viewId})
  * private boolean onPreDraw(View v)
  * {
  * }
- * 
+ *
  * </pre>
  */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnPreDraw {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

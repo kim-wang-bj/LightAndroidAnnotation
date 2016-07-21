@@ -8,22 +8,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** <pre>
- * 
+/**
+ * <pre>
+ *
  * See: {@link android.text.TextWatcher#afterTextChanged(android.text.Editable)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;AfterTextChanged(R.id.id1, R.id.id2)
  * private void afterTextChanged(View, android.text.Editable)
  * {
  * }
- * 
- * </pre> */
+ *
+ * </pre>
+ */
 
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AfterTextChanged {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

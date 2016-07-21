@@ -11,9 +11,9 @@ import java.lang.annotation.Target;
 /**
  * <pre>
  * See: {@link android.view.GestureDetector.SimpleOnGestureListener#onLongPress(android.view.MotionEvent)}
- * 
- * Usage Example:	
- * 
+ *
+ * Usage Example:
+ *
  * &#064;OnLongPress({R.id.id1, R.id.id2 })
  * private void onLongPress(View v, MotionEvent e)
  * {
@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnLongPress {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }

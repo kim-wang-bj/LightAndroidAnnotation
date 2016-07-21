@@ -8,14 +8,12 @@ import java.lang.annotation.Target;
 
 /**
  * @author Wang Qi</br></br>
- * 
- * Usage example: </br><code>&#064;Inflate(R.layoutId) private View view;</code>
- *
+ *         <p>
+ *         Usage example: </br><code>&#064;Inflate(R.layoutId) private View view;</code>
  */
 @Documented
-@Target({ ElementType.FIELD })
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Inflate
-{
-	public int value();
+public @interface Inflate {
+    int value();
 }

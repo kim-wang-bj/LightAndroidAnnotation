@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 
 /**
  * <pre>
- * 
+ *
  * See: {@link View#getViewTreeObserver}
  *
  * Usage Example:
@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OnDraw {
-	public int[] value() default View.NO_ID;
+    int[] value() default View.NO_ID;
 }
