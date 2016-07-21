@@ -76,7 +76,7 @@ DrawableByFile
 DrawableById
 FindById
 FullScreen
-Injector
+Inflate
 OnClick
 OnContextClick
 OnDoubleTap
@@ -94,6 +94,9 @@ OnItemSelectedNothing
 OnKey
 OnLongClick
 OnLongPress
+OnPageScrolled
+OnPageScrollStateChanged
+OnPageSelected
 OnPreDraw
 OnScroll
 OnScrollChanged
