@@ -1,6 +1,7 @@
 package com.wq.android.lightannotation;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -54,6 +56,7 @@ public class Injector {
             log("Injection start: -> " + obj.getClass().getName());
             injectActivityFeature(obj);
             for (Method method : obj.getClass().getDeclaredMethods()) {
+                method.setAccessible(true);
                 injectOnClick(method, obj, view);
                 injectOnLongClick(method, obj, view);
                 injectOnDrag(method, obj, view);
@@ -71,6 +74,7 @@ public class Injector {
                 injectOnScrollChanged(method, obj, view);
             }
             for (Field field : obj.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
                 injectView(field, obj, view);
                 injectSystemService(field, obj, view);
                 injectResource(field, obj, view);
@@ -109,7 +113,6 @@ public class Injector {
             return;
         }
         int id = annotation.value();
-        field.setAccessible(true);
         field.set(obj, getView(obj, view, id));
         log("Inject view: " + Integer.toHexString(id) + " -> " + field);
     }
@@ -121,7 +124,6 @@ public class Injector {
             return;
         }
         String serviceType = annotation.value();
-        field.setAccessible(true);
         Object service = getContext(null, obj, view).getSystemService(serviceType);
         field.set(obj, service);
         log("Inject SystemService: " + service.getClass().getName() + " -> " + field);
@@ -150,6 +152,12 @@ public class Injector {
             Bitmap bitmap = BitmapFactory.decodeFile(drawableByFile.value());
             field.set(obj, new BitmapDrawable(context.getResources(), bitmap));
             log("Inject DrawableByFile: " + drawableByFile.value() + " -> " + field);
+        }
+        Inflate inflate = field.getAnnotation(Inflate.class);
+        if (inflate != null) {
+            View v = LayoutInflater.from(getContext(null, obj, view)).inflate(inflate.value(), null);
+            field.set(obj, v);
+            log("Inject inflate: " + inflate.value() + " -> " + field);
         }
     }
 
@@ -468,6 +476,12 @@ public class Injector {
         if (view != null) {
             return view;
         }
+        if (obj instanceof Fragment) {
+            obj = ((Fragment) obj).getView();
+        }
+        if (obj instanceof android.support.v4.app.Fragment) {
+            obj = ((android.support.v4.app.Fragment) obj).getView();
+        }
         Method method = obj.getClass().getMethod("findViewById", int.class);
         if (method != null && id != View.NO_ID) {
             return (View) method.invoke(obj, id);
@@ -480,7 +494,6 @@ public class Injector {
 
     private static Object invoke(Method method, Object obj, Object... params) {
         try {
-            method.setAccessible(true);
             log("Invoke: " + method);
             return method.invoke(obj, params);
         } catch (Exception e) {

@@ -1,11 +1,11 @@
 package com.wq.android.lightannotation.example;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,6 +17,7 @@ import com.wq.android.lightannotation.BitmapById;
 import com.wq.android.lightannotation.DrawableById;
 import com.wq.android.lightannotation.FindById;
 import com.wq.android.lightannotation.FullScreen;
+import com.wq.android.lightannotation.Inflate;
 import com.wq.android.lightannotation.Injector;
 import com.wq.android.lightannotation.OnClick;
 import com.wq.android.lightannotation.OnDoubleTap;
@@ -30,12 +31,13 @@ import com.wq.android.lightannotation.SystemService;
 
 @FullScreen
 @OrientationPortrait
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     @FindById(R.id.btn_on_double_tap) Button btn;
     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager;
     @DrawableById(R.mipmap.ic_launcher) Drawable drawable;
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
+    @Inflate(R.layout.activity_main) View v;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
