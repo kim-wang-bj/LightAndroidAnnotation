@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -92,7 +93,9 @@ public class Injector {
         Activity activity = (Activity) obj;
         Class<?> clazz = obj.getClass();
         if (clazz.isAnnotationPresent(FullScreen.class)) {
-            activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            Window window = activity.getWindow();
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             log("Inject feature: FullScreen -> " + obj.getClass().getName());
         }
         if (clazz.isAnnotationPresent(OrientationPortrait.class)) {
