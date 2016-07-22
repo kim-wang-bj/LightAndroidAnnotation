@@ -4,7 +4,7 @@
 
 ### Start
     1. Import libs/light-android-annotation.jar to your project.
-    2. Invoke Injector.inject(Object extends Activity or View or Fragment or android.support.v4.app.Fragment) Or Injector.inject(Object, View)
+    2. Invoke Injector.inject(Object) Or Injector.inject(Object, View)
     3. Enjoy.
 ### Usage Example
 ```java
