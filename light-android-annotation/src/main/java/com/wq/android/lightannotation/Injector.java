@@ -513,6 +513,9 @@ public class Injector {
         if (obj instanceof android.support.v4.app.Fragment) {
             obj = ((android.support.v4.app.Fragment) obj).getView();
         }
+        if (obj == null) {
+            throw new NullPointerException("Fragment.getView() == null when inject events to it.");
+        }
         Method method = obj.getClass().getMethod("findViewById", int.class);
         if (method != null && id != View.NO_ID) {
             return (View) method.invoke(obj, id);
