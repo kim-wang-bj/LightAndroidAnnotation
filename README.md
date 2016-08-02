@@ -75,8 +75,10 @@ BitmapById
 DrawableByFile
 DrawableById
 FindById
+FindByIds
 FullScreen
 Inflate
+OnCheckedChanged
 OnClick
 OnContextClick
 OnDoubleTap
