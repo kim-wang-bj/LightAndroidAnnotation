@@ -23,6 +23,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -30,6 +31,7 @@ import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -60,6 +62,7 @@ public class Injector {
             for (Method method : obj.getClass().getDeclaredMethods()) {
                 method.setAccessible(true);
                 injectOnClick(method, obj, view);
+                injectOnCheckedChanged(method, obj, view);
                 injectOnLongClick(method, obj, view);
                 injectOnDrag(method, obj, view);
                 injectOnItemClick(method, obj, view);
@@ -79,6 +82,7 @@ public class Injector {
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 injectView(field, obj, view);
+                injectViews(field, obj, view);
                 injectSystemService(field, obj, view);
                 injectResource(field, obj, view);
             }
@@ -113,13 +117,25 @@ public class Injector {
     }
 
     private static void injectView(Field field, Object obj, View view) throws Exception {
-        FindById annotation = field.getAnnotation(FindById.class);
-        if (annotation == null) {
+        FindById findById = field.getAnnotation(FindById.class);
+        if (findById == null) {
             return;
         }
-        int id = annotation.value();
-        field.set(obj, getView(obj, view, id));
-        log("Inject view: " + Integer.toHexString(id) + " -> " + field);
+        field.set(obj, getView(obj, view, findById.value()));
+        log("Inject view: " + Integer.toHexString(findById.value()) + " -> " + field);
+    }
+
+    private static void injectViews(Field field, Object obj, View view) throws Exception {
+        FindByIds findByIds = field.getAnnotation(FindByIds.class);
+        if (findByIds == null) {
+            return;
+        }
+        ArrayList<View> list = new ArrayList<View>();
+        for (int id : findByIds.value()) {
+            list.add(getView(obj, view, id));
+        }
+        field.set(obj, list);
+        log("Inject views: " + list.size() + " views -> " + field);
     }
 
     @SuppressWarnings("WrongConstant")
@@ -181,6 +197,24 @@ public class Injector {
                 }
             });
             log("Inject OnClick: " + Integer.toHexString(id) + " -> " + method);
+        }
+    }
+
+    private static void injectOnCheckedChanged(final Method method, final Object obj, View view) throws Exception {
+        OnCheckedChanged annotation = method.getAnnotation(OnCheckedChanged.class);
+        if (annotation == null) {
+            return;
+        }
+        int[] ids = annotation.value();
+        for (int id : ids) {
+            CompoundButton v = (CompoundButton) getView(obj, view, id);
+            v.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    invoke(method, obj, buttonView, isChecked);
+                }
+            });
+            log("Inject OnCheckedChanged: " + Integer.toHexString(id) + " -> " + method);
         }
     }
 

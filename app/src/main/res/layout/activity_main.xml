@@ -38,4 +38,10 @@
         android:layout_height="wrap_content"
         android:text="OnDoubleTap"
         android:textAllCaps="false"/>
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:text="checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </LinearLayout>

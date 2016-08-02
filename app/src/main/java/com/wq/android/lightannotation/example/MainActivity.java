@@ -16,9 +16,11 @@ import com.wq.android.lightannotation.AfterTextChanged;
 import com.wq.android.lightannotation.BitmapById;
 import com.wq.android.lightannotation.DrawableById;
 import com.wq.android.lightannotation.FindById;
+import com.wq.android.lightannotation.FindByIds;
 import com.wq.android.lightannotation.FullScreen;
 import com.wq.android.lightannotation.Inflate;
 import com.wq.android.lightannotation.Injector;
+import com.wq.android.lightannotation.OnCheckedChanged;
 import com.wq.android.lightannotation.OnClick;
 import com.wq.android.lightannotation.OnDoubleTap;
 import com.wq.android.lightannotation.OnDown;
@@ -29,6 +31,8 @@ import com.wq.android.lightannotation.OnSingleTapUp;
 import com.wq.android.lightannotation.OrientationPortrait;
 import com.wq.android.lightannotation.SystemService;
 
+import java.util.List;
+
 @FullScreen
 @OrientationPortrait
 public class MainActivity extends Activity {
@@ -38,6 +42,8 @@ public class MainActivity extends Activity {
     @DrawableById(R.mipmap.ic_launcher) Drawable drawable;
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
     @Inflate(R.layout.activity_main) View v;
+
+    @FindByIds({R.id.btn_touch_gesture, R.id.btn_long_click_and_click}) List<View> views;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +88,11 @@ public class MainActivity extends Activity {
     @OnSingleTapUp(R.id.btn_touch_gesture)
     private void onSingleTapUp(View v, MotionEvent e) {
         toast("OnSingleTapUp");
+    }
+
+    @OnCheckedChanged(R.id.checkbox)
+    private void onCheckedChanged(View v, boolean checked) {
+        toast("onCheckedChanged: " + checked);
     }
 
     private void toast(String msg) {
