@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    android:id="@+id/root"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -14,35 +14,68 @@
 
     <EditText
         android:id="@+id/edit_text"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hello World!"
         android:textColor="@android:color/black"/>
 
     <Button
-        android:id="@+id/btn_long_click_and_click"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_click"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="OnClick/OnLongClick"
+        android:text="OnClick"
         android:textAllCaps="false"/>
 
     <Button
-        android:id="@+id/btn_touch_gesture"
-        android:layout_width="wrap_content"
+        android:id="@+id/btn_long_click"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="OnDown/OnLongPress/OnSingleTapUp/OnFling"
+        android:text="OnLongClick"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/btn_down"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OnDown"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/btn_long_press"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OnLongPress"
+        android:textAllCaps="false"/>
+
+    <Button
+        android:id="@+id/btn_single_tap_up"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OnSingleTapUp"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_single_tap_confirmed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OnSingleTapConfirmed"
+        android:textAllCaps="false"/>
+    <Button
+        android:id="@+id/btn_fling"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OnFling"
         android:textAllCaps="false"/>
 
     <Button
         android:id="@+id/btn_on_double_tap"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="OnDoubleTap"
         android:textAllCaps="false"/>
 
     <CheckBox
         android:id="@+id/checkbox"
-        android:text="checkbox"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:text="checkbox"/>
 </LinearLayout>

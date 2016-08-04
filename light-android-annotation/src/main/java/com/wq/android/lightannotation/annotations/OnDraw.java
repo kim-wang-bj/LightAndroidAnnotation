@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * Usage Example:
  *
  * &#064;OnDraw({R.id.viewId})
- * private void onPreDraw(View v)
+ * private void onDraw(View v)
  * {
  * }
  *

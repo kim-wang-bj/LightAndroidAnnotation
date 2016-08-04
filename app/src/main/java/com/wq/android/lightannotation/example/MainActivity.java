@@ -7,11 +7,13 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.wq.android.lightannotation.LightBinder;
 import com.wq.android.lightannotation.annotations.AfterTextChanged;
 import com.wq.android.lightannotation.annotations.BeforeTextChanged;
 import com.wq.android.lightannotation.annotations.BitmapById;
@@ -20,14 +22,16 @@ import com.wq.android.lightannotation.annotations.FindById;
 import com.wq.android.lightannotation.annotations.FindByIds;
 import com.wq.android.lightannotation.annotations.FullScreen;
 import com.wq.android.lightannotation.annotations.Inflate;
-import com.wq.android.lightannotation.LightBinder;
 import com.wq.android.lightannotation.annotations.OnCheckedChanged;
 import com.wq.android.lightannotation.annotations.OnClick;
 import com.wq.android.lightannotation.annotations.OnDoubleTap;
 import com.wq.android.lightannotation.annotations.OnDown;
 import com.wq.android.lightannotation.annotations.OnFling;
+import com.wq.android.lightannotation.annotations.OnGlobalLayout;
+import com.wq.android.lightannotation.annotations.OnKey;
 import com.wq.android.lightannotation.annotations.OnLongClick;
 import com.wq.android.lightannotation.annotations.OnLongPress;
+import com.wq.android.lightannotation.annotations.OnSingleTapConfirmed;
 import com.wq.android.lightannotation.annotations.OnSingleTapUp;
 import com.wq.android.lightannotation.annotations.OnTextChanged;
 import com.wq.android.lightannotation.annotations.OrientationPortrait;
@@ -46,7 +50,7 @@ public class MainActivity extends Activity {
     @Inflate(R.layout.test_inflate) View v;
     @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v1;
 
-    @FindByIds({R.id.btn_touch_gesture, R.id.btn_long_click_and_click}) List<View> views;
+    @FindByIds({R.id.btn_click, R.id.btn_long_click}) List<View> views;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +59,26 @@ public class MainActivity extends Activity {
         LightBinder.DEBUG = true;
         LightBinder.bind(this);
         getFragmentManager().beginTransaction().add(new MyFragment(), "").commit();
+    }
+
+//    @OnDraw(R.id.root)
+//    private void onDraw(View v) {
+//        //toast("OnDraw");
+//    }
+//
+//    @OnPreDraw(R.id.root)
+//    private void onPreDraw(View v) {
+//        //toast("OnPreDraw");
+//    }
+
+    @OnGlobalLayout(R.id.root)
+    private void onGlobalLayout(View v) {
+        //toast("OnGlobalLayout");
+    }
+
+    @OnKey(R.id.edit_text)
+    private void onKey(View v, int keyCode, KeyEvent event) {
+        toast("OnKey");
     }
 
     @AfterTextChanged(R.id.edit_text)
@@ -72,20 +96,29 @@ public class MainActivity extends Activity {
         //toast("OnTextChanged");
     }
 
-    @OnClick(R.id.btn_long_click_and_click)
-    @OnLongClick(R.id.btn_long_click_and_click)
-    private void onClickAndLongClick(View v) {
-        toast("OnClick/OnLongClick");
+    @OnClick(R.id.btn_click)
+    private void onClick(View v) {
+        toast("OnClick");
     }
 
-    @OnDown(R.id.btn_touch_gesture)
+    @OnLongClick(R.id.btn_long_click)
+    private void onLongClick(View v) {
+        toast("OnLongClick");
+    }
+
+    @OnDown(R.id.btn_down)
     private void onDown(View v, MotionEvent e) {
         toast("OnDown");
     }
 
-    @OnLongPress(R.id.btn_touch_gesture)
+    @OnLongPress(R.id.btn_long_press)
     private void onLongPress(View v, MotionEvent e) {
         toast("OnLongPress");
+    }
+
+    @OnSingleTapConfirmed(R.id.btn_single_tap_confirmed)
+    private void onSingleTapConfirmed(View v, MotionEvent e) {
+        toast("OnSingleTapConfirmed");
     }
 
     @OnDoubleTap(R.id.btn_on_double_tap)
@@ -93,12 +126,12 @@ public class MainActivity extends Activity {
         toast("OnDoubleTap");
     }
 
-    @OnFling(R.id.btn_touch_gesture)
+    @OnFling(R.id.btn_fling)
     private void onFling(View v, MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         toast("OnFling: velocityX=" + velocityX + ", velocityY=" + velocityY);
     }
 
-    @OnSingleTapUp(R.id.btn_touch_gesture)
+    @OnSingleTapUp(R.id.btn_single_tap_up)
     private void onSingleTapUp(View v, MotionEvent e) {
         toast("OnSingleTapUp");
     }

@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.wq.android.lightannotation.LightBinder;
-import com.wq.android.lightannotation.annotations.OnClick;
 
 /**
  * Created by qwang on 2016/7/21.
@@ -22,10 +21,5 @@ public class MyFragment extends Fragment {
         View root = inflater.inflate(R.layout.activity_main, container, false);
         LightBinder.bind(this, root);
         return root;
-    }
-
-    @OnClick(R.id.btn_long_click_and_click)
-    private void onClick(View v) {
-
     }
 }

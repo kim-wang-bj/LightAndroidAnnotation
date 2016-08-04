@@ -214,7 +214,7 @@ public final class LightBinder {
                 int parent = inflate.parent();
                 View v = LayoutInflater.from(context).inflate(id, (ViewGroup) getView(obj, view, parent));
                 field.set(obj, v);
-                log("Bind inflate: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind Inflate: " + Integer.toHexString(id) + " -> " + field);
             }
         }
     }
@@ -380,7 +380,7 @@ public final class LightBinder {
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
                         Object result = invoke(method, obj, v, keyCode, event);
-                        return result instanceof Boolean ? (Boolean) result : true;
+                        return result instanceof Boolean ? (Boolean) result : false;
                     }
                 });
                 log("Bind OnKey: " + Integer.toHexString(id) + " -> " + method);
