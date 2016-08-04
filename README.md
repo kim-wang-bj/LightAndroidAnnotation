@@ -38,25 +38,64 @@ public class MainActivity extends Activity {
         Injector.inject(this);
     }
 
+   @OnDraw(R.id.root)
+    private void onDraw(View v) {
+        //toast("OnDraw");
+    }
+
+    @OnPreDraw(R.id.root)
+    private void onPreDraw(View v) {
+        //toast("OnPreDraw");
+    }
+
+    @OnGlobalLayout(R.id.root)
+    private void onGlobalLayout(View v) {
+        //toast("OnGlobalLayout");
+    }
+
+    @OnKey(R.id.edit_text)
+    private void onKey(View v, int keyCode, KeyEvent event) {
+        toast("OnKey");
+    }
+
     @AfterTextChanged(R.id.edit_text)
-    private void onEditTextChanged(View v, Editable editable) {
-        toast("AfterTextChanged: " + editable.toString());
+    private void AfterTextChanged(View v, Editable editable) {
+        //toast("AfterTextChanged: " + editable.toString());
     }
 
-    @OnClick(R.id.btn_long_click_and_click)
-    @OnLongClick(R.id.btn_long_click_and_click)
-    private void onClickAndLongClick(View v) {
-        toast("OnClick/OnLongClick");
+    @BeforeTextChanged(R.id.edit_text)
+    private void BeforeTextChanged(View v, CharSequence s, int a, int b, int c) {
+        //toast("BeforeTextChanged");
     }
 
-    @OnDown(R.id.btn_touch_gesture)
+    @OnTextChanged(R.id.edit_text)
+    private void OnTextChanged(View v, CharSequence s, int a, int b, int c) {
+        //toast("OnTextChanged");
+    }
+
+    @OnClick(R.id.btn_click)
+    private void onClick(View v) {
+        toast("OnClick");
+    }
+
+    @OnLongClick(R.id.btn_long_click)
+    private void onLongClick(View v) {
+        toast("OnLongClick");
+    }
+
+    @OnDown(R.id.btn_down)
     private void onDown(View v, MotionEvent e) {
         toast("OnDown");
     }
 
-    @OnLongPress(R.id.btn_touch_gesture)
+    @OnLongPress(R.id.btn_long_press)
     private void onLongPress(View v, MotionEvent e) {
         toast("OnLongPress");
+    }
+
+    @OnSingleTapConfirmed(R.id.btn_single_tap_confirmed)
+    private void onSingleTapConfirmed(View v, MotionEvent e) {
+        toast("OnSingleTapConfirmed");
     }
 
     @OnDoubleTap(R.id.btn_on_double_tap)
@@ -64,14 +103,19 @@ public class MainActivity extends Activity {
         toast("OnDoubleTap");
     }
 
-    @OnFling(R.id.btn_touch_gesture)
+    @OnFling(R.id.btn_fling)
     private void onFling(View v, MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         toast("OnFling: velocityX=" + velocityX + ", velocityY=" + velocityY);
     }
 
-    @OnSingleTapUp(R.id.btn_touch_gesture)
+    @OnSingleTapUp(R.id.btn_single_tap_up)
     private void onSingleTapUp(View v, MotionEvent e) {
         toast("OnSingleTapUp");
+    }
+
+    @OnCheckedChanged(R.id.checkbox)
+    private void onCheckedChanged(View v, boolean checked) {
+        toast("onCheckedChanged: " + checked);
     }
 
     private void toast(String msg) {
