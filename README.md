@@ -127,6 +127,12 @@ public class MainActivity extends Activity {
 ```java
 AfterTextChanged
 BeforeTextChanged
+BindArray
+BindBool
+BindColor
+BindDimen
+BindInt
+BindString
 BitmapByFile
 BitmapById
 DrawableByFile
