@@ -1,5 +1,7 @@
 package com.wq.android.lightannotation;
 
+import android.view.View;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,5 +18,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Inflate {
     int value();
-    int parent();
+    int parent() default View.NO_ID;
 }

@@ -43,7 +43,8 @@ public class MainActivity extends Activity {
     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager;
     @DrawableById(R.mipmap.ic_launcher) Drawable drawable;
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
-    @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v;
+    @Inflate(R.layout.test_inflate) View v;
+    @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v1;
 
     @FindByIds({R.id.btn_touch_gesture, R.id.btn_long_click_and_click}) List<View> views;
 
