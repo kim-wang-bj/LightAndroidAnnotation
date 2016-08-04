@@ -4,7 +4,7 @@
 
 ### Start
     1. Import libs/light-android-annotation.jar to your project.
-    2. Invoke Injector.inject(Object) Or Injector.inject(Object, View)
+    2. Invoke LightBinder.bind(Object) Or LightBinder.bind(Object, View)
     3. Enjoy.
 ### Usage Example
 ```java
