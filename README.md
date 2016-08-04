@@ -4,7 +4,7 @@
 
 ### Start
     1. Import libs/light-android-annotation.jar to your project.
-    2. Invoke Injector.inject(Object) Or Injector.inject(Object, View)
+    2. Invoke LightBinder.bind(Object) Or LightBinder.bind(Object, View)
     3. Enjoy.
 ### Usage Example
 ```java
@@ -16,6 +16,8 @@ public class MainActivity extends Activity {
     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager;
     @DrawableById(R.mipmap.ic_launcher) Drawable drawable;
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
+    @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v;
+    @FindByIds({R.id.btn_touch_gesture, R.id.btn_long_click_and_click}) List<View> views;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
