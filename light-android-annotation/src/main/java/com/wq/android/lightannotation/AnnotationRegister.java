@@ -23,6 +23,12 @@ import com.wq.android.lightannotation.LightBinder.TextWatcherBinder;
 import com.wq.android.lightannotation.LightBinder.ViewBinder;
 import com.wq.android.lightannotation.annotations.AfterTextChanged;
 import com.wq.android.lightannotation.annotations.BeforeTextChanged;
+import com.wq.android.lightannotation.annotations.BindArray;
+import com.wq.android.lightannotation.annotations.BindBool;
+import com.wq.android.lightannotation.annotations.BindColor;
+import com.wq.android.lightannotation.annotations.BindDimen;
+import com.wq.android.lightannotation.annotations.BindInt;
+import com.wq.android.lightannotation.annotations.BindString;
 import com.wq.android.lightannotation.annotations.BitmapByFile;
 import com.wq.android.lightannotation.annotations.BitmapById;
 import com.wq.android.lightannotation.annotations.DrawableByFile;
@@ -82,6 +88,12 @@ final class AnnotationRegister {
         supportedAnnotations.put(OnTextChanged.class, textWatcherBinder);
 
         ResourceBinder resourceBinder = new ResourceBinder();
+        supportedAnnotations.put(BindArray.class, resourceBinder);
+        supportedAnnotations.put(BindBool.class, resourceBinder);
+        supportedAnnotations.put(BindColor.class, resourceBinder);
+        supportedAnnotations.put(BindDimen.class, resourceBinder);
+        supportedAnnotations.put(BindInt.class, resourceBinder);
+        supportedAnnotations.put(BindString.class, resourceBinder);
         supportedAnnotations.put(BitmapByFile.class, resourceBinder);
         supportedAnnotations.put(BitmapById.class, resourceBinder);
         supportedAnnotations.put(DrawableByFile.class, resourceBinder);

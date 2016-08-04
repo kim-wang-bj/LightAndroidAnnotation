@@ -30,6 +30,12 @@ import android.widget.TextView;
 
 import com.wq.android.lightannotation.annotations.AfterTextChanged;
 import com.wq.android.lightannotation.annotations.BeforeTextChanged;
+import com.wq.android.lightannotation.annotations.BindArray;
+import com.wq.android.lightannotation.annotations.BindBool;
+import com.wq.android.lightannotation.annotations.BindColor;
+import com.wq.android.lightannotation.annotations.BindDimen;
+import com.wq.android.lightannotation.annotations.BindInt;
+import com.wq.android.lightannotation.annotations.BindString;
 import com.wq.android.lightannotation.annotations.BitmapByFile;
 import com.wq.android.lightannotation.annotations.BitmapById;
 import com.wq.android.lightannotation.annotations.DrawableByFile;
@@ -78,6 +84,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -163,11 +170,16 @@ public final class LightBinder {
                 field.set(obj, getView(obj, view, id));
                 log("Bind view: " + Integer.toHexString(id) + " -> " + field);
             } else if (annotation instanceof FindByIds) {
-                ArrayList<View> list = new ArrayList<View>();
+                String type = field.getGenericType().toString();
+                List<View> list = new ArrayList<View>();
                 for (int id : ((FindByIds) annotation).value()) {
                     list.add(getView(obj, view, id));
                 }
-                field.set(obj, list);
+                if ("class [Landroid.view.View;".equals(type)) {
+                    field.set(obj, list.toArray(new View[]{}));
+                } else {
+                    field.set(obj, list);
+                }
                 log("Bind views: " + list.size() + " views -> " + field);
             }
         }
@@ -215,6 +227,35 @@ public final class LightBinder {
                 View v = LayoutInflater.from(context).inflate(id, (ViewGroup) getView(obj, view, parent));
                 field.set(obj, v);
                 log("Bind Inflate: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindArray) {
+                int id = ((BindArray) annotation).value();
+                String type = field.getGenericType().toString();
+                if ("class [Ljava.lang.String;".equals(type)) {
+                    field.set(obj, context.getResources().getStringArray(id));
+                } else if ("class [I".equals(type)) {
+                    field.set(obj, context.getResources().getIntArray(id));
+                }
+                log("Bind BindArray: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindBool) {
+                int id = ((BindBool) annotation).value();
+                field.set(obj, context.getResources().getBoolean(id));
+                log("Bind BindBool: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindColor) {
+                int id = ((BindColor) annotation).value();
+                field.set(obj, context.getResources().getColor(id));
+                log("Bind BindColor: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindDimen) {
+                int id = ((BindDimen) annotation).value();
+                field.set(obj, context.getResources().getDimension(id));
+                log("Bind BindDimen: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindInt) {
+                int id = ((BindInt) annotation).value();
+                field.set(obj, context.getResources().getInteger(id));
+                log("Bind BindInt: " + Integer.toHexString(id) + " -> " + field);
+            } else if (annotation instanceof BindString) {
+                int id = ((BindString) annotation).value();
+                field.set(obj, context.getResources().getString(id));
+                log("Bind BindString: " + Integer.toHexString(id) + " -> " + field);
             }
         }
     }

@@ -2,4 +2,16 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <integer name="test_int">10</integer>
+    <bool name="test_bool">true</bool>
+    <integer-array name="int_array">
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+    </integer-array>
+    <string-array name="string_array">
+        <item>test</item>
+        <item>test</item>
+        <item>test</item>
+    </string-array>
 </resources>
