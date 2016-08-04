@@ -13,13 +13,14 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.wq.android.lightannotation.AfterTextChanged;
+import com.wq.android.lightannotation.BeforeTextChanged;
 import com.wq.android.lightannotation.BitmapById;
 import com.wq.android.lightannotation.DrawableById;
 import com.wq.android.lightannotation.FindById;
 import com.wq.android.lightannotation.FindByIds;
 import com.wq.android.lightannotation.FullScreen;
 import com.wq.android.lightannotation.Inflate;
-import com.wq.android.lightannotation.Injector;
+import com.wq.android.lightannotation.LightBinder;
 import com.wq.android.lightannotation.OnCheckedChanged;
 import com.wq.android.lightannotation.OnClick;
 import com.wq.android.lightannotation.OnDoubleTap;
@@ -28,6 +29,7 @@ import com.wq.android.lightannotation.OnFling;
 import com.wq.android.lightannotation.OnLongClick;
 import com.wq.android.lightannotation.OnLongPress;
 import com.wq.android.lightannotation.OnSingleTapUp;
+import com.wq.android.lightannotation.OnTextChanged;
 import com.wq.android.lightannotation.OrientationPortrait;
 import com.wq.android.lightannotation.SystemService;
 
@@ -41,7 +43,7 @@ public class MainActivity extends Activity {
     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager;
     @DrawableById(R.mipmap.ic_launcher) Drawable drawable;
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
-    @Inflate(R.layout.activity_main) View v;
+    @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v;
 
     @FindByIds({R.id.btn_touch_gesture, R.id.btn_long_click_and_click}) List<View> views;
 
@@ -49,14 +51,24 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Injector.DEBUG = true;
-        Injector.inject(this);
+        LightBinder.DEBUG = true;
+        LightBinder.bind(this);
         getFragmentManager().beginTransaction().add(new MyFragment(), "").commit();
     }
 
     @AfterTextChanged(R.id.edit_text)
-    private void onEditTextChanged(View v, Editable editable) {
-        toast("AfterTextChanged: " + editable.toString());
+    private void AfterTextChanged(View v, Editable editable) {
+        //toast("AfterTextChanged: " + editable.toString());
+    }
+
+    @BeforeTextChanged(R.id.edit_text)
+    private void BeforeTextChanged(View v, CharSequence s, int a, int b, int c) {
+        //toast("BeforeTextChanged");
+    }
+
+    @OnTextChanged(R.id.edit_text)
+    private void OnTextChanged(View v, CharSequence s, int a, int b, int c) {
+        //toast("OnTextChanged");
     }
 
     @OnClick(R.id.btn_long_click_and_click)

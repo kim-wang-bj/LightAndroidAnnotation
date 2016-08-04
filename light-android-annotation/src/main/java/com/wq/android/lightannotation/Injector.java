@@ -43,6 +43,54 @@ public class Injector {
 
     private static final String TAG = Injector.class.getSimpleName();
     public static boolean DEBUG = false;
+    private static final Map<Class<? extends Annotation>, Integer> supportedAnnotations = new HashMap<Class<? extends Annotation>, Integer>();
+
+    static {
+        supportedAnnotations.put(AfterTextChanged.class, AfterTextChanged.class.hashCode());
+        supportedAnnotations.put(BeforeTextChanged.class, BeforeTextChanged.class.hashCode());
+        supportedAnnotations.put(BitmapByFile.class, BitmapByFile.class.hashCode());
+        supportedAnnotations.put(BitmapById.class, BitmapById.class.hashCode());
+        supportedAnnotations.put(DrawableByFile.class, DrawableByFile.class.hashCode());
+        supportedAnnotations.put(DrawableById.class, DrawableById.class.hashCode());
+        supportedAnnotations.put(FindById.class, FindById.class.hashCode());
+        supportedAnnotations.put(FindByIds.class, FindByIds.class.hashCode());
+        supportedAnnotations.put(FullScreen.class, FullScreen.class.hashCode());
+        supportedAnnotations.put(Inflate.class, Inflate.class.hashCode());
+        supportedAnnotations.put(OnCheckedChanged.class, OnCheckedChanged.class.hashCode());
+        supportedAnnotations.put(OnClick.class, OnClick.class.hashCode());
+        supportedAnnotations.put(OnContextClick.class, OnContextClick.class.hashCode());
+        supportedAnnotations.put(OnDoubleTap.class, OnDoubleTap.class.hashCode());
+        supportedAnnotations.put(OnDoubleTapEvent.class, OnDoubleTapEvent.class.hashCode());
+        supportedAnnotations.put(OnDown.class, OnDown.class.hashCode());
+        supportedAnnotations.put(OnDrag.class, OnDrag.class.hashCode());
+        supportedAnnotations.put(OnDraw.class, OnDraw.class.hashCode());
+        supportedAnnotations.put(OnEditorAction.class, OnEditorAction.class.hashCode());
+        supportedAnnotations.put(OnFling.class, OnFling.class.hashCode());
+        supportedAnnotations.put(OnGlobalLayout.class, OnGlobalLayout.class.hashCode());
+        supportedAnnotations.put(OnItemClick.class, OnItemClick.class.hashCode());
+        supportedAnnotations.put(OnItemLongClick.class, OnItemLongClick.class.hashCode());
+        supportedAnnotations.put(OnItemSelected.class, OnItemSelected.class.hashCode());
+        supportedAnnotations.put(OnItemSelectedNothing.class, OnItemSelectedNothing.class.hashCode());
+        supportedAnnotations.put(OnKey.class, OnKey.class.hashCode());
+        supportedAnnotations.put(OnLongClick.class, OnLongClick.class.hashCode());
+        supportedAnnotations.put(OnLongPress.class, OnLongPress.class.hashCode());
+        supportedAnnotations.put(OnPageScrolled.class, OnPageScrolled.class.hashCode());
+        supportedAnnotations.put(OnPageScrollStateChanged.class, OnPageScrollStateChanged.class.hashCode());
+        supportedAnnotations.put(OnPageSelected.class, OnPageSelected.class.hashCode());
+        supportedAnnotations.put(OnPreDraw.class, OnPreDraw.class.hashCode());
+        supportedAnnotations.put(OnScroll.class, OnScroll.class.hashCode());
+        supportedAnnotations.put(OnPreDraw.class, OnPreDraw.class.hashCode());
+        supportedAnnotations.put(OnScrollChanged.class, OnScrollChanged.class.hashCode());
+        supportedAnnotations.put(OnShowPress.class, OnShowPress.class.hashCode());
+        supportedAnnotations.put(OnSingleTapConfirmed.class, OnSingleTapConfirmed.class.hashCode());
+        supportedAnnotations.put(OnSingleTapUp.class, OnSingleTapUp.class.hashCode());
+        supportedAnnotations.put(OnTextChanged.class, OnTextChanged.class.hashCode());
+        supportedAnnotations.put(OnTouch.class, OnTouch.class.hashCode());
+        supportedAnnotations.put(OrientationLandscape.class, OrientationLandscape.class.hashCode());
+        supportedAnnotations.put(OrientationPortrait.class, OrientationPortrait.class.hashCode());
+        supportedAnnotations.put(OrientationSensor.class, OrientationSensor.class.hashCode());
+        supportedAnnotations.put(SystemService.class, SystemService.class.hashCode());
+    }
 
     private Injector() {
     }
@@ -61,6 +109,9 @@ public class Injector {
             injectActivityFeature(obj);
             for (Method method : obj.getClass().getDeclaredMethods()) {
                 method.setAccessible(true);
+                if (!isSupported(method)) {
+                    continue;
+                }
                 injectOnClick(method, obj, view);
                 injectOnCheckedChanged(method, obj, view);
                 injectOnLongClick(method, obj, view);
@@ -90,6 +141,15 @@ public class Injector {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean isSupported(Method method) {
+        for (Annotation annotation : method.getDeclaredAnnotations()) {
+            if (supportedAnnotations.get(annotation.annotationType()) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void injectActivityFeature(Object obj) {
@@ -758,6 +818,7 @@ public class Injector {
             }
             return Injector.invoke(method, obj.get(), params);
         }
+
     }
 
     private static void log(String msg) {

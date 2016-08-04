@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.wq.android.lightannotation.Injector;
+import com.wq.android.lightannotation.LightBinder;
 import com.wq.android.lightannotation.OnClick;
 
 /**
@@ -20,7 +20,7 @@ public class MyFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.activity_main, container, false);
-        Injector.inject(this, root);
+        LightBinder.bind(this, root);
         return root;
     }
 
