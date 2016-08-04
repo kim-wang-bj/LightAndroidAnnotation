@@ -1,6 +1,6 @@
 # LightAndroidAnnotation
 
-    A smallest and fastest Android annotation library.
+    A small Android annotation library.
 
 ### Start
     1. Import libs/light-android-annotation.jar to your project.
@@ -75,8 +75,10 @@ BitmapById
 DrawableByFile
 DrawableById
 FindById
+FindByIds
 FullScreen
 Inflate
+OnCheckedChanged
 OnClick
 OnContextClick
 OnDoubleTap
