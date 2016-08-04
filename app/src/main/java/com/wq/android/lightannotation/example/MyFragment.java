@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.wq.android.lightannotation.LightBinder;
-import com.wq.android.lightannotation.OnClick;
+import com.wq.android.lightannotation.annotations.OnClick;
 
 /**
  * Created by qwang on 2016/7/21.

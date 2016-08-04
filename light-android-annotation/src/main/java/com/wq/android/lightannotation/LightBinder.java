@@ -28,6 +28,50 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.wq.android.lightannotation.annotations.AfterTextChanged;
+import com.wq.android.lightannotation.annotations.BeforeTextChanged;
+import com.wq.android.lightannotation.annotations.BitmapByFile;
+import com.wq.android.lightannotation.annotations.BitmapById;
+import com.wq.android.lightannotation.annotations.DrawableByFile;
+import com.wq.android.lightannotation.annotations.DrawableById;
+import com.wq.android.lightannotation.annotations.FindById;
+import com.wq.android.lightannotation.annotations.FindByIds;
+import com.wq.android.lightannotation.annotations.FullScreen;
+import com.wq.android.lightannotation.annotations.Inflate;
+import com.wq.android.lightannotation.annotations.OnCheckedChanged;
+import com.wq.android.lightannotation.annotations.OnClick;
+import com.wq.android.lightannotation.annotations.OnContextClick;
+import com.wq.android.lightannotation.annotations.OnDoubleTap;
+import com.wq.android.lightannotation.annotations.OnDoubleTapEvent;
+import com.wq.android.lightannotation.annotations.OnDown;
+import com.wq.android.lightannotation.annotations.OnDrag;
+import com.wq.android.lightannotation.annotations.OnDraw;
+import com.wq.android.lightannotation.annotations.OnEditorAction;
+import com.wq.android.lightannotation.annotations.OnFling;
+import com.wq.android.lightannotation.annotations.OnGlobalLayout;
+import com.wq.android.lightannotation.annotations.OnItemClick;
+import com.wq.android.lightannotation.annotations.OnItemLongClick;
+import com.wq.android.lightannotation.annotations.OnItemSelected;
+import com.wq.android.lightannotation.annotations.OnItemSelectedNothing;
+import com.wq.android.lightannotation.annotations.OnKey;
+import com.wq.android.lightannotation.annotations.OnLongClick;
+import com.wq.android.lightannotation.annotations.OnLongPress;
+import com.wq.android.lightannotation.annotations.OnPageScrollStateChanged;
+import com.wq.android.lightannotation.annotations.OnPageScrolled;
+import com.wq.android.lightannotation.annotations.OnPageSelected;
+import com.wq.android.lightannotation.annotations.OnPreDraw;
+import com.wq.android.lightannotation.annotations.OnScroll;
+import com.wq.android.lightannotation.annotations.OnScrollChanged;
+import com.wq.android.lightannotation.annotations.OnShowPress;
+import com.wq.android.lightannotation.annotations.OnSingleTapConfirmed;
+import com.wq.android.lightannotation.annotations.OnSingleTapUp;
+import com.wq.android.lightannotation.annotations.OnTextChanged;
+import com.wq.android.lightannotation.annotations.OnTouch;
+import com.wq.android.lightannotation.annotations.OrientationLandscape;
+import com.wq.android.lightannotation.annotations.OrientationPortrait;
+import com.wq.android.lightannotation.annotations.OrientationSensor;
+import com.wq.android.lightannotation.annotations.SystemService;
+
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -44,72 +88,6 @@ public final class LightBinder {
 
     private final static String TAG = LightBinder.class.getSimpleName();
     public static boolean DEBUG = false;
-
-    private final static Map<Class<? extends Annotation>, Binder> supportedAnnotations = new HashMap<>();
-
-    static {
-        TextWatcherBinder textWatcherBinder = new TextWatcherBinder();
-        supportedAnnotations.put(AfterTextChanged.class, textWatcherBinder);
-        supportedAnnotations.put(BeforeTextChanged.class, textWatcherBinder);
-        supportedAnnotations.put(OnTextChanged.class, textWatcherBinder);
-
-        ResourceBinder resourceBinder = new ResourceBinder();
-        supportedAnnotations.put(BitmapByFile.class, resourceBinder);
-        supportedAnnotations.put(BitmapById.class, resourceBinder);
-        supportedAnnotations.put(DrawableByFile.class, resourceBinder);
-        supportedAnnotations.put(DrawableById.class, resourceBinder);
-
-        ViewBinder viewBinder = new ViewBinder();
-        supportedAnnotations.put(FindById.class, viewBinder);
-        supportedAnnotations.put(FindByIds.class, viewBinder);
-
-        supportedAnnotations.put(Inflate.class, resourceBinder);
-
-        supportedAnnotations.put(OnCheckedChanged.class, new OnCheckedChangedBinder());
-        supportedAnnotations.put(OnClick.class, new OnClickBinder());
-        supportedAnnotations.put(OnDrag.class, new OnDragBinder());
-        supportedAnnotations.put(OnDraw.class, new OnDrawBinder());
-
-        OnGestureBinder onGestureBinder = new OnGestureBinder();
-        supportedAnnotations.put(OnContextClick.class, onGestureBinder);
-        supportedAnnotations.put(OnDoubleTap.class, onGestureBinder);
-        supportedAnnotations.put(OnDoubleTapEvent.class, onGestureBinder);
-        supportedAnnotations.put(OnDown.class, onGestureBinder);
-        supportedAnnotations.put(OnScroll.class, onGestureBinder);
-        supportedAnnotations.put(OnFling.class, onGestureBinder);
-        supportedAnnotations.put(OnLongPress.class, onGestureBinder);
-        supportedAnnotations.put(OnShowPress.class, onGestureBinder);
-        supportedAnnotations.put(OnSingleTapConfirmed.class, onGestureBinder);
-        supportedAnnotations.put(OnSingleTapUp.class, onGestureBinder);
-
-        supportedAnnotations.put(OnEditorAction.class, new OnEditorActionBinder());
-        supportedAnnotations.put(OnGlobalLayout.class, new OnGlobalLayoutBinder());
-        supportedAnnotations.put(OnItemClick.class, new OnItemClickBinder());
-        supportedAnnotations.put(OnItemLongClick.class, new OnItemLongClickBinder());
-
-        OnItemSelectedBinder onItemSelectedBinder = new OnItemSelectedBinder();
-        supportedAnnotations.put(OnItemSelected.class, onItemSelectedBinder);
-        supportedAnnotations.put(OnItemSelectedNothing.class, onItemSelectedBinder);
-
-        supportedAnnotations.put(OnKey.class, new OnKeyBinder());
-        supportedAnnotations.put(OnLongClick.class, new OnLongClickBinder());
-
-        OnPageChangedBinder onPageChangedBinder = new OnPageChangedBinder();
-        supportedAnnotations.put(OnPageScrolled.class, onPageChangedBinder);
-        supportedAnnotations.put(OnPageScrollStateChanged.class, onPageChangedBinder);
-        supportedAnnotations.put(OnPageSelected.class, onPageChangedBinder);
-
-        supportedAnnotations.put(OnPreDraw.class, new OnPreDrawBinder());
-        supportedAnnotations.put(OnScrollChanged.class, new OnScrollChangedBinder());
-        supportedAnnotations.put(OnTouch.class, new OnTouchBinder());
-
-        ActivityFeatureBinder activityFeatureBinder = new ActivityFeatureBinder();
-        supportedAnnotations.put(FullScreen.class, activityFeatureBinder);
-        supportedAnnotations.put(OrientationLandscape.class, activityFeatureBinder);
-        supportedAnnotations.put(OrientationPortrait.class, activityFeatureBinder);
-        supportedAnnotations.put(OrientationSensor.class, activityFeatureBinder);
-        supportedAnnotations.put(SystemService.class, new SystemServiceBinder());
-    }
 
     private LightBinder() {
     }
@@ -128,22 +106,22 @@ public final class LightBinder {
             log("Bind start: -> " + clazz.getName());
             if (obj instanceof Activity) {
                 for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-                    Binder injector = supportedAnnotations.get(annotation.annotationType());
-                    if (injector != null) injector.bind(annotation, null, null, obj, view);
+                    Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
+                    if (binder != null) binder.bind(annotation, null, null, obj, view);
                 }
             }
             for (Method method : obj.getClass().getDeclaredMethods()) {
                 method.setAccessible(true);
                 for (Annotation annotation : method.getDeclaredAnnotations()) {
-                    Binder injector = supportedAnnotations.get(annotation.annotationType());
-                    if (injector != null) injector.bind(annotation, method, null, obj, view);
+                    Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
+                    if (binder != null) binder.bind(annotation, method, null, obj, view);
                 }
             }
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 for (Annotation annotation : field.getDeclaredAnnotations()) {
-                    Binder injector = supportedAnnotations.get(annotation.annotationType());
-                    if (injector != null) injector.bind(annotation, null, field, obj, view);
+                    Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
+                    if (binder != null) binder.bind(annotation, null, field, obj, view);
                 }
             }
             log("Bind finish: (cost " + (System.currentTimeMillis() - startTime) + "ms)");
@@ -152,7 +130,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class ActivityFeatureBinder extends Binder {
+    final static class ActivityFeatureBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
@@ -176,7 +154,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class ViewBinder extends Binder {
+    final static class ViewBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
@@ -195,7 +173,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class SystemServiceBinder extends Binder {
+    final static class SystemServiceBinder extends Binder {
 
         @Override
         @SuppressWarnings("WrongConstant")
@@ -207,7 +185,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class ResourceBinder extends Binder {
+    final static class ResourceBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
@@ -241,7 +219,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnClickBinder extends Binder {
+    final static class OnClickBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -259,7 +237,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnCheckedChangedBinder extends Binder {
+    final static class OnCheckedChangedBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -277,7 +255,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnDragBinder extends Binder {
+    final static class OnDragBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -296,7 +274,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnLongClickBinder extends Binder {
+    final static class OnLongClickBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -315,7 +293,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnItemClickBinder extends Binder {
+    final static class OnItemClickBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -333,7 +311,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnItemLongClickBinder extends Binder {
+    final static class OnItemLongClickBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -352,7 +330,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnEditorActionBinder extends Binder {
+    final static class OnEditorActionBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -371,7 +349,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnTouchBinder extends Binder {
+    final static class OnTouchBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -391,7 +369,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnKeyBinder extends Binder {
+    final static class OnKeyBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -410,7 +388,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnPreDrawBinder extends Binder {
+    final static class OnPreDrawBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -429,7 +407,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnDrawBinder extends Binder {
+    final static class OnDrawBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -447,7 +425,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnGlobalLayoutBinder extends Binder {
+    final static class OnGlobalLayoutBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -465,7 +443,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnScrollChangedBinder extends Binder {
+    final static class OnScrollChangedBinder extends Binder {
 
         @Override
         void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
@@ -483,7 +461,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class TextWatcherBinder extends Binder {
+    final static class TextWatcherBinder extends Binder {
         private final static Map<View, MyTextWatcher> txtWatcherMap = new WeakHashMap<View, MyTextWatcher>();
 
         @Override
@@ -503,7 +481,7 @@ public final class LightBinder {
             }
         }
 
-        private final static class MyTextWatcher extends BaseListener implements TextWatcher {
+        final static class MyTextWatcher extends BaseListener implements TextWatcher {
 
             MyTextWatcher(Object obj, View view) {
                 super(obj, view);
@@ -526,7 +504,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnPageChangedBinder extends Binder {
+    final static class OnPageChangedBinder extends Binder {
         private final static Map<View, MyOnPageChangeListener> pageChangedListenerMap = new WeakHashMap<View, MyOnPageChangeListener>();
 
         @Override
@@ -546,7 +524,7 @@ public final class LightBinder {
             }
         }
 
-        private final static class MyOnPageChangeListener extends BaseListener implements ViewPager.OnPageChangeListener {
+        final static class MyOnPageChangeListener extends BaseListener implements ViewPager.OnPageChangeListener {
 
             MyOnPageChangeListener(Object obj, View view) {
                 super(obj, view);
@@ -569,7 +547,7 @@ public final class LightBinder {
         }
     }
 
-    private final static class OnItemSelectedBinder extends Binder {
+    final static class OnItemSelectedBinder extends Binder {
         private static Map<View, MyItemSelectedListener> itemSelectedListenerMap = new WeakHashMap<View, MyItemSelectedListener>();
 
         @Override
@@ -589,7 +567,7 @@ public final class LightBinder {
             }
         }
 
-        private final static class MyItemSelectedListener extends BaseListener implements AdapterView.OnItemSelectedListener {
+        final static class MyItemSelectedListener extends BaseListener implements AdapterView.OnItemSelectedListener {
 
             MyItemSelectedListener(Object obj, View view) {
                 super(obj, view);
@@ -608,7 +586,7 @@ public final class LightBinder {
     }
 
 
-    private final static class OnGestureBinder extends Binder {
+    final static class OnGestureBinder extends Binder {
         private static Map<View, MyOnTouchListener> gestureMap = new WeakHashMap<View, MyOnTouchListener>();
 
         @Override
@@ -628,7 +606,7 @@ public final class LightBinder {
             }
         }
 
-        private final static class MyOnTouchListener implements View.OnTouchListener {
+        final static class MyOnTouchListener implements View.OnTouchListener {
 
             private GestureDetector gestureDetector;
             private GestureListener gestureListener;
@@ -649,7 +627,7 @@ public final class LightBinder {
             }
         }
 
-        private final static class GestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
+        final static class GestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
             BaseListener baseListener;
 
             private GestureListener(Object obj, View view) {
@@ -713,7 +691,7 @@ public final class LightBinder {
         }
     }
 
-    private abstract static class Binder {
+    abstract static class Binder {
         abstract void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception;
     }
 
