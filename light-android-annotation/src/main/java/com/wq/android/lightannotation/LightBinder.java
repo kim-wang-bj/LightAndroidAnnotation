@@ -63,7 +63,6 @@ public final class LightBinder {
         supportedAnnotations.put(FindById.class, viewBinder);
         supportedAnnotations.put(FindByIds.class, viewBinder);
 
-        supportedAnnotations.put(FullScreen.class, null);
         supportedAnnotations.put(Inflate.class, resourceBinder);
 
         supportedAnnotations.put(OnCheckedChanged.class, new OnCheckedChangedBinder());
@@ -104,9 +103,11 @@ public final class LightBinder {
         supportedAnnotations.put(OnScrollChanged.class, new OnScrollChangedBinder());
         supportedAnnotations.put(OnTouch.class, new OnTouchBinder());
 
-        supportedAnnotations.put(OrientationLandscape.class, null);
-        supportedAnnotations.put(OrientationPortrait.class, null);
-        supportedAnnotations.put(OrientationSensor.class, null);
+        ActivityFeatureBinder activityFeatureBinder = new ActivityFeatureBinder();
+        supportedAnnotations.put(FullScreen.class, activityFeatureBinder);
+        supportedAnnotations.put(OrientationLandscape.class, activityFeatureBinder);
+        supportedAnnotations.put(OrientationPortrait.class, activityFeatureBinder);
+        supportedAnnotations.put(OrientationSensor.class, activityFeatureBinder);
         supportedAnnotations.put(SystemService.class, new SystemServiceBinder());
     }
 
@@ -123,67 +124,73 @@ public final class LightBinder {
         }
         try {
             long startTime = System.currentTimeMillis();
-            log("Injection start: -> " + obj.getClass().getName());
-            injectActivityFeature(obj);
+            Class clazz = obj.getClass();
+            log("Bind start: -> " + clazz.getName());
+            if (obj instanceof Activity) {
+                for (Annotation annotation : clazz.getDeclaredAnnotations()) {
+                    Binder injector = supportedAnnotations.get(annotation.annotationType());
+                    if (injector != null) injector.bind(annotation, null, null, obj, view);
+                }
+            }
             for (Method method : obj.getClass().getDeclaredMethods()) {
                 method.setAccessible(true);
                 for (Annotation annotation : method.getDeclaredAnnotations()) {
                     Binder injector = supportedAnnotations.get(annotation.annotationType());
-                    if (injector != null) injector.inject(annotation, method, null, obj, view);
+                    if (injector != null) injector.bind(annotation, method, null, obj, view);
                 }
             }
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 for (Annotation annotation : field.getDeclaredAnnotations()) {
                     Binder injector = supportedAnnotations.get(annotation.annotationType());
-                    if (injector != null) injector.inject(annotation, null, field, obj, view);
+                    if (injector != null) injector.bind(annotation, null, field, obj, view);
                 }
             }
-            log("Injection finish: (cost " + (System.currentTimeMillis() - startTime) + "ms)");
+            log("Bind finish: (cost " + (System.currentTimeMillis() - startTime) + "ms)");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void injectActivityFeature(Object obj) {
-        if (!(obj instanceof Activity)) {
-            return;
-        }
-        Activity activity = (Activity) obj;
-        Class<?> clazz = obj.getClass();
-        if (clazz.isAnnotationPresent(FullScreen.class)) {
-            Window window = activity.getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            log("Inject feature: FullScreen -> " + obj.getClass().getName());
-        }
-        if (clazz.isAnnotationPresent(OrientationPortrait.class)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-            log("Inject feature: OrientationPortrait -> " + obj.getClass().getName());
-        } else if (clazz.isAnnotationPresent(OrientationLandscape.class)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-            log("Inject feature: OrientationLandscape -> " + obj.getClass().getName());
-        } else if (clazz.isAnnotationPresent(OrientationSensor.class)) {
-            activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-            log("Inject feature: OrientationSensor -> " + obj.getClass().getName());
+    private final static class ActivityFeatureBinder extends Binder {
+
+        @Override
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+            Activity activity = (Activity) obj;
+            if (annotation instanceof FullScreen) {
+                Window window = activity.getWindow();
+                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                log("Bind feature: FullScreen -> " + obj.getClass().getName());
+            }
+            if (annotation instanceof OrientationPortrait) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                log("Bind feature: OrientationPortrait -> " + obj.getClass().getName());
+            } else if (annotation instanceof OrientationLandscape) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                log("Bind feature: OrientationLandscape -> " + obj.getClass().getName());
+            } else if (annotation instanceof OrientationSensor) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                log("Bind feature: OrientationSensor -> " + obj.getClass().getName());
+            }
         }
     }
 
     private final static class ViewBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
             if (annotation instanceof FindById) {
                 int id = ((FindById) annotation).value();
                 field.set(obj, getView(obj, view, id));
-                log("Inject view: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind view: " + Integer.toHexString(id) + " -> " + field);
             } else if (annotation instanceof FindByIds) {
                 ArrayList<View> list = new ArrayList<View>();
                 for (int id : ((FindByIds) annotation).value()) {
                     list.add(getView(obj, view, id));
                 }
                 field.set(obj, list);
-                log("Inject views: " + list.size() + " views -> " + field);
+                log("Bind views: " + list.size() + " views -> " + field);
             }
         }
     }
@@ -192,44 +199,44 @@ public final class LightBinder {
 
         @Override
         @SuppressWarnings("WrongConstant")
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
             String serviceType = ((SystemService) annotation).value();
             Object service = getContext(null, obj, view).getSystemService(serviceType);
             field.set(obj, service);
-            log("Inject SystemService: " + service.getClass().getName() + " -> " + field);
+            log("Bind SystemService: " + service.getClass().getName() + " -> " + field);
         }
     }
 
     private final static class ResourceBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
             Context context = getContext(null, obj, view);
             if (annotation instanceof BitmapById) {
                 int id = ((BitmapById) annotation).value();
                 field.set(obj, BitmapFactory.decodeResource(context.getResources(), id));
-                log("Inject BitmapById: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind BitmapById: " + Integer.toHexString(id) + " -> " + field);
             } else if (annotation instanceof BitmapByFile) {
                 String file = ((BitmapByFile) annotation).value();
                 field.set(obj, BitmapFactory.decodeFile(file));
-                log("Inject BitmapByFile: " + file + " -> " + field);
+                log("Bind BitmapByFile: " + file + " -> " + field);
             } else if (annotation instanceof DrawableById) {
                 int id = ((DrawableById) annotation).value();
                 Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), id);
                 field.set(obj, new BitmapDrawable(context.getResources(), bitmap));
-                log("Inject DrawableById: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind DrawableById: " + Integer.toHexString(id) + " -> " + field);
             } else if (annotation instanceof DrawableByFile) {
                 String file = ((DrawableByFile) annotation).value();
                 Bitmap bitmap = BitmapFactory.decodeFile(file);
                 field.set(obj, new BitmapDrawable(context.getResources(), bitmap));
-                log("Inject DrawableByFile: " + file + " -> " + field);
+                log("Bind DrawableByFile: " + file + " -> " + field);
             } else if (annotation instanceof Inflate) {
                 Inflate inflate = (Inflate) annotation;
                 int id = inflate.value();
                 int parent = inflate.parent();
                 View v = LayoutInflater.from(context).inflate(id, (ViewGroup) getView(obj, view, parent));
                 field.set(obj, v);
-                log("Inject inflate: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind inflate: " + Integer.toHexString(id) + " -> " + field);
             }
         }
     }
@@ -237,7 +244,7 @@ public final class LightBinder {
     private final static class OnClickBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnClick) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -247,7 +254,7 @@ public final class LightBinder {
                         invoke(method, obj, v);
                     }
                 });
-                log("Inject OnClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnClick: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -255,7 +262,7 @@ public final class LightBinder {
     private final static class OnCheckedChangedBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnCheckedChanged) annotation).value();
             for (int id : ids) {
                 CompoundButton v = (CompoundButton) getView(obj, view, id);
@@ -265,7 +272,7 @@ public final class LightBinder {
                         invoke(method, obj, buttonView, isChecked);
                     }
                 });
-                log("Inject OnCheckedChanged: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnCheckedChanged: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -273,7 +280,7 @@ public final class LightBinder {
     private final static class OnDragBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnDrag) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -284,7 +291,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnDrag: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnDrag: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -292,7 +299,7 @@ public final class LightBinder {
     private final static class OnLongClickBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnLongClick) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -303,7 +310,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnLongClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnLongClick: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -311,7 +318,7 @@ public final class LightBinder {
     private final static class OnItemClickBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnItemClick) annotation).value();
             for (int id : ids) {
                 ListView v = (ListView) getView(obj, view, id);
@@ -321,7 +328,7 @@ public final class LightBinder {
                         invoke(method, obj, parent, view, position, id);
                     }
                 });
-                log("Inject OnItemClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnItemClick: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -329,7 +336,7 @@ public final class LightBinder {
     private final static class OnItemLongClickBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnItemLongClick) annotation).value();
             for (int id : ids) {
                 ListView v = (ListView) getView(obj, view, id);
@@ -340,7 +347,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnItemLongClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnItemLongClick: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -348,7 +355,7 @@ public final class LightBinder {
     private final static class OnEditorActionBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnEditorAction) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -359,7 +366,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnEditorAction: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnEditorAction: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -367,7 +374,7 @@ public final class LightBinder {
     private final static class OnTouchBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnTouch) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -379,7 +386,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnTouch: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnTouch: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -387,7 +394,7 @@ public final class LightBinder {
     private final static class OnKeyBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnKey) annotation).value();
             for (int id : ids) {
                 View v = getView(obj, view, id);
@@ -398,7 +405,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnKey: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnKey: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -406,7 +413,7 @@ public final class LightBinder {
     private final static class OnPreDrawBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnPreDraw) annotation).value();
             for (int id : ids) {
                 final View v = getView(obj, view, id);
@@ -417,7 +424,7 @@ public final class LightBinder {
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Inject OnPreDraw: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnPreDraw: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -425,7 +432,7 @@ public final class LightBinder {
     private final static class OnDrawBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnDraw) annotation).value();
             for (int id : ids) {
                 final View v = getView(obj, view, id);
@@ -435,7 +442,7 @@ public final class LightBinder {
                         invoke(method, obj, v);
                     }
                 });
-                log("Inject OnDraw: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnDraw: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -443,7 +450,7 @@ public final class LightBinder {
     private final static class OnGlobalLayoutBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnGlobalLayout) annotation).value();
             for (int id : ids) {
                 final View v = getView(obj, view, id);
@@ -453,7 +460,7 @@ public final class LightBinder {
                         invoke(method, obj, v);
                     }
                 });
-                log("Inject OnGlobalLayout: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnGlobalLayout: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -461,7 +468,7 @@ public final class LightBinder {
     private final static class OnScrollChangedBinder extends Binder {
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
             int[] ids = ((OnScrollChanged) annotation).value();
             for (int id : ids) {
                 final View v = getView(obj, view, id);
@@ -471,7 +478,7 @@ public final class LightBinder {
                         invoke(method, obj, v);
                     }
                 });
-                log("Inject OnScrollChanged: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnScrollChanged: " + Integer.toHexString(id) + " -> " + method);
             }
         }
     }
@@ -480,8 +487,10 @@ public final class LightBinder {
         private final static Map<View, MyTextWatcher> txtWatcherMap = new WeakHashMap<View, MyTextWatcher>();
 
         @Override
-        void inject(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = (int[]) annotation.getClass().getDeclaredMethod("value").invoke(annotation);
+        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
+            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+            annotationMethod.setAccessible(true);
+            int[] ids = (int[]) annotationMethod.invoke(annotation);
             for (final int id : ids) {
                 TextView tv = (TextView) getView(obj, view, id);
                 MyTextWatcher textWatcher = txtWatcherMap.get(tv);
@@ -521,8 +530,10 @@ public final class LightBinder {
         private final static Map<View, MyOnPageChangeListener> pageChangedListenerMap = new WeakHashMap<View, MyOnPageChangeListener>();
 
         @Override
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            int[] ids = (int[]) annotation.getClass().getDeclaredMethod("value").invoke(annotation);
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+            annotationMethod.setAccessible(true);
+            int[] ids = (int[]) annotationMethod.invoke(annotation);
             for (final int id : ids) {
                 ViewPager v = (ViewPager) getView(obj, view, id);
                 MyOnPageChangeListener listener = pageChangedListenerMap.get(v);
@@ -562,8 +573,10 @@ public final class LightBinder {
         private static Map<View, MyItemSelectedListener> itemSelectedListenerMap = new WeakHashMap<View, MyItemSelectedListener>();
 
         @Override
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            int[] ids = (int[]) annotation.getClass().getDeclaredMethod("value").invoke(annotation);
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+            annotationMethod.setAccessible(true);
+            int[] ids = (int[]) annotationMethod.invoke(annotation);
             for (final int id : ids) {
                 ListView v = (ListView) getView(obj, view, id);
                 MyItemSelectedListener listener = itemSelectedListenerMap.get(v);
@@ -599,8 +612,10 @@ public final class LightBinder {
         private static Map<View, MyOnTouchListener> gestureMap = new WeakHashMap<View, MyOnTouchListener>();
 
         @Override
-        void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            int[] ids = (int[]) annotation.getClass().getDeclaredMethod("value").invoke(annotation);
+        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
+            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+            annotationMethod.setAccessible(true);
+            int[] ids = (int[]) annotationMethod.invoke(annotation);
             for (int id : ids) {
                 View v = getView(obj, view, id);
                 MyOnTouchListener onTouchListener = gestureMap.get(v);
@@ -629,7 +644,7 @@ public final class LightBinder {
             }
 
             private void putMethod(Class<? extends Annotation> clazz, Method method) {
-                log("Inject " + clazz.getSimpleName() + ": -> " + method);
+                log("Bind " + clazz.getSimpleName() + ": -> " + method);
                 gestureListener.baseListener.eventMethodMap.put(clazz, method);
             }
         }
@@ -699,7 +714,7 @@ public final class LightBinder {
     }
 
     private abstract static class Binder {
-        abstract void inject(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception;
+        abstract void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception;
     }
 
     private static class BaseListener {
@@ -713,7 +728,7 @@ public final class LightBinder {
         }
 
         protected void putMethod(Class<? extends Annotation> clazz, Method method) {
-            log("Inject " + clazz.getSimpleName() + ": -> " + method);
+            log("Bind " + clazz.getSimpleName() + ": -> " + method);
             eventMethodMap.put(clazz, method);
         }
 
@@ -740,14 +755,13 @@ public final class LightBinder {
             obj = ((android.support.v4.app.Fragment) obj).getView();
         }
         if (obj == null) {
-            throw new NullPointerException("Fragment.getView() == null when inject events to it.");
-        }
-        Method method = obj.getClass().getMethod("findViewById", int.class);
-        if (method != null && id != View.NO_ID) {
-            return (View) method.invoke(obj, id);
+            throw new NullPointerException(obj.getClass().getSimpleName() + ".getView() == null when bind events to it.");
         }
         if (obj instanceof View) {
-            return (View) obj;
+            return ((View) obj).findViewById(id);
+        }
+        if (obj instanceof Activity) {
+            return ((Activity) obj).findViewById(id);
         }
         return null;
     }
@@ -757,10 +771,10 @@ public final class LightBinder {
             return ((Activity) obj).getApplicationContext();
         }
         if (obj instanceof View) {
-            return ((View) obj).getContext();
+            return ((View) obj).getContext().getApplicationContext();
         }
         if (view != null) {
-            return view.getContext();
+            return view.getContext().getApplicationContext();
         }
         if (obj instanceof Fragment) {
             Fragment fragment = ((Fragment) obj);
