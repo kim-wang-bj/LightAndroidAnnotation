@@ -7,6 +7,32 @@
     2. Invoke LightBinder.bind(Object) Or LightBinder.bind(Object, View)
     3. Enjoy.
 ### Usage Example
+
+```java
+//Supports method parameters binding:
+@OnClick(R.id.btn_click)
+private void onClick(View v,
+                     @BindArray(R.array.array) String[] array,
+                     @BindArray(R.array.string_array) String[] array1,
+                     @BindArray(R.array.int_array) int[] intArray,
+                     @BindColor(R.color.colorAccent) int color,
+                     @BindDimen(R.dimen.activity_horizontal_margin) float margin,
+                     @BindInt(R.integer.test_int) int integer,
+                     @BindString(R.string.app_name) String name,
+                     @BindBool(R.bool.test_bool) boolean bool,
+                     @FindById(R.id.btn_on_double_tap) Button btn,
+                     @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
+                     @FindByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1,
+                     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager,
+                     @DrawableById(R.mipmap.ic_launcher) Drawable drawable,
+                     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap,
+                     @Inflate(R.layout.test_inflate) View v1,
+                     @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v2) {
+    // do onClick
+}
+
+```
+
 ```java
 @FullScreen
 @OrientationPortrait
