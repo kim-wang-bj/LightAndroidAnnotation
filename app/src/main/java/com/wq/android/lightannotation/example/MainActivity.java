@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
 
     @OnKey(R.id.edit_text)
     private void onKey(View v, int keyCode, KeyEvent event) {
-        toast("OnKey");
+        //toast("OnKey");
     }
 
     @AfterTextChanged(R.id.edit_text)
@@ -103,12 +103,12 @@ public class MainActivity extends Activity {
     }
 
     @BeforeTextChanged(R.id.edit_text)
-    private void BeforeTextChanged(View v, CharSequence s, int a, int b, int c) {
-        //toast("BeforeTextChanged");
+    private void BeforeTextChanged(View v, CharSequence s, int start, int count, int after) {
+        toast("BeforeTextChanged");
     }
 
     @OnTextChanged(R.id.edit_text)
-    private void OnTextChanged(View v, CharSequence s, int a, int b, int c) {
+    private void OnTextChanged(View v, CharSequence s, int start, int count, int after) {
         //toast("OnTextChanged");
     }
 
