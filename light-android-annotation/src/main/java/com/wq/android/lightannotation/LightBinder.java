@@ -1,6 +1,7 @@
 package com.wq.android.lightannotation;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -93,8 +94,20 @@ import java.util.WeakHashMap;
  */
 public final class LightBinder {
 
-    private final static String TAG = LightBinder.class.getSimpleName();
     public static boolean DEBUG = false;
+    private final static String TAG = LightBinder.class.getSimpleName();
+    private static Context appContext = null;
+
+    static {
+        try {
+            appContext = (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null, (Object[]) null);
+            if (appContext == null) {
+                appContext = (Application) Class.forName("android.app.AppGlobals").getMethod("getInitialApplication").invoke(null, (Object[]) null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private LightBinder() {
     }
@@ -114,21 +127,21 @@ public final class LightBinder {
             if (obj instanceof Activity) {
                 for (Annotation annotation : clazz.getDeclaredAnnotations()) {
                     Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
-                    if (binder != null) binder.bind(annotation, null, null, obj, view);
+                    if (binder != null) binder.bind(new BindParams(annotation, obj, view));
                 }
             }
             for (Method method : obj.getClass().getDeclaredMethods()) {
                 method.setAccessible(true);
                 for (Annotation annotation : method.getDeclaredAnnotations()) {
                     Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
-                    if (binder != null) binder.bind(annotation, method, null, obj, view);
+                    if (binder != null) binder.bind(new BindParams(annotation, obj, method, view));
                 }
             }
             for (Field field : obj.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 for (Annotation annotation : field.getDeclaredAnnotations()) {
                     Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
-                    if (binder != null) binder.bind(annotation, null, field, obj, view);
+                    if (binder != null) binder.bind(new BindParams(annotation, obj, field, view));
                 }
             }
             log("Bind finish: (cost " + (System.currentTimeMillis() - startTime) + "ms)");
@@ -140,48 +153,54 @@ public final class LightBinder {
     final static class ActivityFeatureBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            Activity activity = (Activity) obj;
-            if (annotation instanceof FullScreen) {
+        Object bind(BindParams params) throws Exception {
+            Activity activity = (Activity) params.obj;
+            if (params.annotation instanceof FullScreen) {
                 Window window = activity.getWindow();
                 window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                log("Bind feature: FullScreen -> " + obj.getClass().getName());
+                log("Bind feature: FullScreen -> " + params.obj.getClass().getName());
             }
-            if (annotation instanceof OrientationPortrait) {
+            if (params.annotation instanceof OrientationPortrait) {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                log("Bind feature: OrientationPortrait -> " + obj.getClass().getName());
-            } else if (annotation instanceof OrientationLandscape) {
+                log("Bind feature: OrientationPortrait -> " + params.obj.getClass().getName());
+            } else if (params.annotation instanceof OrientationLandscape) {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                log("Bind feature: OrientationLandscape -> " + obj.getClass().getName());
-            } else if (annotation instanceof OrientationSensor) {
+                log("Bind feature: OrientationLandscape -> " + params.obj.getClass().getName());
+            } else if (params.annotation instanceof OrientationSensor) {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                log("Bind feature: OrientationSensor -> " + obj.getClass().getName());
+                log("Bind feature: OrientationSensor -> " + params.obj.getClass().getName());
             }
+            return null;
         }
     }
 
     final static class ViewBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            if (annotation instanceof FindById) {
-                int id = ((FindById) annotation).value();
-                field.set(obj, getView(obj, view, id));
-                log("Bind view: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof FindByIds) {
-                String type = field.getGenericType().toString();
+        Object bind(BindParams params) throws Exception {
+            Object result = null;
+            if (params.annotation instanceof FindById) {
+                int id = ((FindById) params.annotation).value();
+                result = getView(params.obj, params.view, id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind view: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof FindByIds) {
+                String type = params.paramType != null ? params.paramType.toString() : params.field.getGenericType().toString();
                 List<View> list = new ArrayList<View>();
-                for (int id : ((FindByIds) annotation).value()) {
-                    list.add(getView(obj, view, id));
+                for (int id : ((FindByIds) params.annotation).value()) {
+                    list.add(getView(params.obj, params.view, id));
                 }
                 if ("class [Landroid.view.View;".equals(type)) {
-                    field.set(obj, list.toArray(new View[]{}));
+                    result = list.toArray(new View[list.size()]);
+                    if (params.field != null) params.field.set(params.obj, result);
                 } else {
-                    field.set(obj, list);
+                    result = list;
+                    if (params.field != null) params.field.set(params.obj, list);
                 }
-                log("Bind views: " + list.size() + " views -> " + field);
+                log("Bind views: " + list.size() + " views -> " + params.field);
             }
+            return result;
         }
     }
 
@@ -189,316 +208,342 @@ public final class LightBinder {
 
         @Override
         @SuppressWarnings("WrongConstant")
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            String serviceType = ((SystemService) annotation).value();
-            Object service = getContext(null, obj, view).getSystemService(serviceType);
-            field.set(obj, service);
-            log("Bind SystemService: " + service.getClass().getName() + " -> " + field);
+        Object bind(BindParams params) throws Exception {
+            String serviceType = ((SystemService) params.annotation).value();
+            Object service = appContext.getSystemService(serviceType);
+            if (params.field != null) params.field.set(params.obj, service);
+            log("Bind SystemService: " + service.getClass().getName() + " -> " + params.field);
+            return service;
         }
     }
 
     final static class ResourceBinder extends Binder {
-
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            Context context = getContext(null, obj, view);
-            if (annotation instanceof BitmapById) {
-                int id = ((BitmapById) annotation).value();
-                field.set(obj, BitmapFactory.decodeResource(context.getResources(), id));
-                log("Bind BitmapById: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BitmapByFile) {
-                String file = ((BitmapByFile) annotation).value();
-                field.set(obj, BitmapFactory.decodeFile(file));
-                log("Bind BitmapByFile: " + file + " -> " + field);
-            } else if (annotation instanceof DrawableById) {
-                int id = ((DrawableById) annotation).value();
+        Object bind(BindParams params) throws Exception {
+            Context context = appContext;
+            Object result = null;
+            if (params.annotation instanceof BitmapById) {
+                int id = ((BitmapById) params.annotation).value();
+                result = BitmapFactory.decodeResource(context.getResources(), id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BitmapById: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BitmapByFile) {
+                String file = ((BitmapByFile) params.annotation).value();
+                result = BitmapFactory.decodeFile(file);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BitmapByFile: " + file + " -> " + params.field);
+            } else if (params.annotation instanceof DrawableById) {
+                int id = ((DrawableById) params.annotation).value();
                 Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), id);
-                field.set(obj, new BitmapDrawable(context.getResources(), bitmap));
-                log("Bind DrawableById: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof DrawableByFile) {
-                String file = ((DrawableByFile) annotation).value();
+                result = new BitmapDrawable(context.getResources(), bitmap);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind DrawableById: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof DrawableByFile) {
+                String file = ((DrawableByFile) params.annotation).value();
                 Bitmap bitmap = BitmapFactory.decodeFile(file);
-                field.set(obj, new BitmapDrawable(context.getResources(), bitmap));
-                log("Bind DrawableByFile: " + file + " -> " + field);
-            } else if (annotation instanceof Inflate) {
-                Inflate inflate = (Inflate) annotation;
+                result = new BitmapDrawable(context.getResources(), bitmap);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind DrawableByFile: " + file + " -> " + params.field);
+            } else if (params.annotation instanceof Inflate) {
+                Inflate inflate = (Inflate) params.annotation;
                 int id = inflate.value();
                 int parent = inflate.parent();
-                View v = LayoutInflater.from(context).inflate(id, (ViewGroup) getView(obj, view, parent));
-                field.set(obj, v);
-                log("Bind Inflate: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindArray) {
-                int id = ((BindArray) annotation).value();
-                String type = field.getGenericType().toString();
+                View v = LayoutInflater.from(context).inflate(id, (ViewGroup) getView(params.obj, params.view, parent));
+                result = v;
+                if (params.field != null) params.field.set(params.obj, v);
+                log("Bind Inflate: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindArray) {
+                int id = ((BindArray) params.annotation).value();
+                String type = params.paramType != null ? params.paramType.toString() : params.field.getGenericType().toString();
                 if ("class [Ljava.lang.String;".equals(type)) {
-                    field.set(obj, context.getResources().getStringArray(id));
+                    result = context.getResources().getStringArray(id);
+                    if (params.field != null) params.field.set(params.obj, result);
                 } else if ("class [I".equals(type)) {
-                    field.set(obj, context.getResources().getIntArray(id));
+                    result = context.getResources().getIntArray(id);
+                    if (params.field != null) params.field.set(params.obj, result);
                 }
-                log("Bind BindArray: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindBool) {
-                int id = ((BindBool) annotation).value();
-                field.set(obj, context.getResources().getBoolean(id));
-                log("Bind BindBool: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindColor) {
-                int id = ((BindColor) annotation).value();
-                field.set(obj, context.getResources().getColor(id));
-                log("Bind BindColor: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindDimen) {
-                int id = ((BindDimen) annotation).value();
-                field.set(obj, context.getResources().getDimension(id));
-                log("Bind BindDimen: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindInt) {
-                int id = ((BindInt) annotation).value();
-                field.set(obj, context.getResources().getInteger(id));
-                log("Bind BindInt: " + Integer.toHexString(id) + " -> " + field);
-            } else if (annotation instanceof BindString) {
-                int id = ((BindString) annotation).value();
-                field.set(obj, context.getResources().getString(id));
-                log("Bind BindString: " + Integer.toHexString(id) + " -> " + field);
+                log("Bind BindArray: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindBool) {
+                int id = ((BindBool) params.annotation).value();
+                result = context.getResources().getBoolean(id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BindBool: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindColor) {
+                int id = ((BindColor) params.annotation).value();
+                result = context.getResources().getColor(id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BindColor: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindDimen) {
+                int id = ((BindDimen) params.annotation).value();
+                result = context.getResources().getDimension(id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BindDimen: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindInt) {
+                int id = ((BindInt) params.annotation).value();
+                result = context.getResources().getInteger(id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BindInt: " + Integer.toHexString(id) + " -> " + params.field);
+            } else if (params.annotation instanceof BindString) {
+                int id = ((BindString) params.annotation).value();
+                result = context.getResources().getString(id);
+                if (params.field != null) params.field.set(params.obj, result);
+                log("Bind BindString: " + Integer.toHexString(id) + " -> " + params.field);
             }
+            return result;
         }
     }
 
     final static class OnClickBinder extends Binder {
-
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnClick) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnClick) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        invoke(method, obj, v);
+                        invoke(params.method, params.obj, v);
                     }
                 });
-                log("Bind OnClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnClick: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnCheckedChangedBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnCheckedChanged) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnCheckedChanged) params.annotation).value();
             for (int id : ids) {
-                CompoundButton v = (CompoundButton) getView(obj, view, id);
+                CompoundButton v = (CompoundButton) getView(params.obj, params.view, id);
                 v.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        invoke(method, obj, buttonView, isChecked);
+                        invoke(params.method, params.obj, buttonView, isChecked);
                     }
                 });
-                log("Bind OnCheckedChanged: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnCheckedChanged: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnDragBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnDrag) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnDrag) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 v.setOnDragListener(new View.OnDragListener() {
                     @Override
                     public boolean onDrag(View v, DragEvent event) {
-                        Object result = invoke(method, obj, v, event);
+                        Object result = invoke(params.method, params.obj, v, event);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnDrag: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnDrag: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnLongClickBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnLongClick) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnLongClick) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 v.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        Object result = invoke(method, obj, v);
+                        Object result = invoke(params.method, params.obj, v);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnLongClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnLongClick: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnItemClickBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnItemClick) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnItemClick) params.annotation).value();
             for (int id : ids) {
-                ListView v = (ListView) getView(obj, view, id);
+                ListView v = (ListView) getView(params.obj, params.view, id);
                 v.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        invoke(method, obj, parent, view, position, id);
+                        invoke(params.method, params.obj, parent, view, position, id);
                     }
                 });
-                log("Bind OnItemClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnItemClick: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnItemLongClickBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnItemLongClick) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnItemLongClick) params.annotation).value();
             for (int id : ids) {
-                ListView v = (ListView) getView(obj, view, id);
+                ListView v = (ListView) getView(params.obj, params.view, id);
                 v.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
                     @Override
                     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                        Object result = invoke(method, obj, parent, view, position, id);
+                        Object result = invoke(params.method, params.obj, parent, view, position, id);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnItemLongClick: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnItemLongClick: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnEditorActionBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnEditorAction) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnEditorAction) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 ((TextView) v).setOnEditorActionListener(new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        Object result = invoke(method, obj, v, actionId, event);
+                        Object result = invoke(params.method, params.obj, v, actionId, event);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnEditorAction: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnEditorAction: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnTouchBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnTouch) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnTouch) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 v.setOnTouchListener(new View.OnTouchListener() {
 
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
-                        Object result = invoke(method, obj, v, event);
+                        Object result = invoke(params.method, params.obj, v, event);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnTouch: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnTouch: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnKeyBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnKey) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnKey) params.annotation).value();
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 v.setOnKeyListener(new View.OnKeyListener() {
                     @Override
                     public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        Object result = invoke(method, obj, v, keyCode, event);
+                        Object result = invoke(params.method, params.obj, v, keyCode, event);
                         return result instanceof Boolean ? (Boolean) result : false;
                     }
                 });
-                log("Bind OnKey: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnKey: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnPreDrawBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnPreDraw) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnPreDraw) params.annotation).value();
             for (int id : ids) {
-                final View v = getView(obj, view, id);
+                final View v = getView(params.obj, params.view, id);
                 v.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
                     @Override
                     public boolean onPreDraw() {
-                        Object result = invoke(method, obj, v);
+                        Object result = invoke(params.method, params.obj, v);
                         return result instanceof Boolean ? (Boolean) result : true;
                     }
                 });
-                log("Bind OnPreDraw: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnPreDraw: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnDrawBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnDraw) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnDraw) params.annotation).value();
             for (int id : ids) {
-                final View v = getView(obj, view, id);
+                final View v = getView(params.obj, params.view, id);
                 v.getViewTreeObserver().addOnDrawListener(new ViewTreeObserver.OnDrawListener() {
                     @Override
                     public void onDraw() {
-                        invoke(method, obj, v);
+                        invoke(params.method, params.obj, v);
                     }
                 });
-                log("Bind OnDraw: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnDraw: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnGlobalLayoutBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnGlobalLayout) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnGlobalLayout) params.annotation).value();
             for (int id : ids) {
-                final View v = getView(obj, view, id);
+                final View v = getView(params.obj, params.view, id);
                 v.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        invoke(method, obj, v);
+                        invoke(params.method, params.obj, v);
                     }
                 });
-                log("Bind OnGlobalLayout: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnGlobalLayout: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
     final static class OnScrollChangedBinder extends Binder {
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            int[] ids = ((OnScrollChanged) annotation).value();
+        Object bind(final BindParams params) throws Exception {
+            int[] ids = ((OnScrollChanged) params.annotation).value();
             for (int id : ids) {
-                final View v = getView(obj, view, id);
+                final View v = getView(params.obj, params.view, id);
                 v.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
                     @Override
                     public void onScrollChanged() {
-                        invoke(method, obj, v);
+                        invoke(params.method, params.obj, v);
                     }
                 });
-                log("Bind OnScrollChanged: " + Integer.toHexString(id) + " -> " + method);
+                log("Bind OnScrollChanged: " + Integer.toHexString(id) + " -> " + params.method);
             }
+            return null;
         }
     }
 
@@ -506,20 +551,21 @@ public final class LightBinder {
         private final static Map<View, MyTextWatcher> txtWatcherMap = new WeakHashMap<View, MyTextWatcher>();
 
         @Override
-        void bind(Annotation annotation, final Method method, Field field, final Object obj, View view) throws Exception {
-            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+        Object bind(BindParams params) throws Exception {
+            Method annotationMethod = params.annotation.getClass().getDeclaredMethod("value");
             annotationMethod.setAccessible(true);
-            int[] ids = (int[]) annotationMethod.invoke(annotation);
+            int[] ids = (int[]) annotationMethod.invoke(params.annotation);
             for (final int id : ids) {
-                TextView tv = (TextView) getView(obj, view, id);
+                TextView tv = (TextView) getView(params.obj, params.view, id);
                 MyTextWatcher textWatcher = txtWatcherMap.get(tv);
                 if (textWatcher == null) {
-                    textWatcher = new MyTextWatcher(obj, tv);
+                    textWatcher = new MyTextWatcher(params.obj, tv);
                     txtWatcherMap.put(tv, textWatcher);
                     tv.addTextChangedListener(textWatcher);
                 }
-                textWatcher.putMethod(annotation.annotationType(), method);
+                textWatcher.putMethod(params.annotation.annotationType(), params.method);
             }
+            return null;
         }
 
         final static class MyTextWatcher extends BaseListener implements TextWatcher {
@@ -549,20 +595,21 @@ public final class LightBinder {
         private final static Map<View, MyOnPageChangeListener> pageChangedListenerMap = new WeakHashMap<View, MyOnPageChangeListener>();
 
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+        Object bind(BindParams params) throws Exception {
+            Method annotationMethod = params.annotation.getClass().getDeclaredMethod("value");
             annotationMethod.setAccessible(true);
-            int[] ids = (int[]) annotationMethod.invoke(annotation);
+            int[] ids = (int[]) annotationMethod.invoke(params.annotation);
             for (final int id : ids) {
-                ViewPager v = (ViewPager) getView(obj, view, id);
+                ViewPager v = (ViewPager) getView(params.obj, params.view, id);
                 MyOnPageChangeListener listener = pageChangedListenerMap.get(v);
                 if (listener == null) {
-                    listener = new MyOnPageChangeListener(obj, v);
+                    listener = new MyOnPageChangeListener(params.obj, v);
                     pageChangedListenerMap.put(v, listener);
                     v.addOnPageChangeListener(listener);
                 }
-                listener.putMethod(annotation.annotationType(), method);
+                listener.putMethod(params.annotation.annotationType(), params.method);
             }
+            return null;
         }
 
         final static class MyOnPageChangeListener extends BaseListener implements ViewPager.OnPageChangeListener {
@@ -592,20 +639,21 @@ public final class LightBinder {
         private static Map<View, MyItemSelectedListener> itemSelectedListenerMap = new WeakHashMap<View, MyItemSelectedListener>();
 
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+        Object bind(BindParams params) throws Exception {
+            Method annotationMethod = params.annotation.getClass().getDeclaredMethod("value");
             annotationMethod.setAccessible(true);
-            int[] ids = (int[]) annotationMethod.invoke(annotation);
+            int[] ids = (int[]) annotationMethod.invoke(params.annotation);
             for (final int id : ids) {
-                ListView v = (ListView) getView(obj, view, id);
+                ListView v = (ListView) getView(params.obj, params.view, id);
                 MyItemSelectedListener listener = itemSelectedListenerMap.get(v);
                 if (listener == null) {
-                    listener = new MyItemSelectedListener(obj, v);
+                    listener = new MyItemSelectedListener(params.obj, v);
                     itemSelectedListenerMap.put(v, listener);
                 }
-                listener.putMethod(annotation.annotationType(), method);
+                listener.putMethod(params.annotation.annotationType(), params.method);
                 v.setOnItemSelectedListener(listener);
             }
+            return null;
         }
 
         final static class MyItemSelectedListener extends BaseListener implements AdapterView.OnItemSelectedListener {
@@ -631,20 +679,21 @@ public final class LightBinder {
         private static Map<View, MyOnTouchListener> gestureMap = new WeakHashMap<View, MyOnTouchListener>();
 
         @Override
-        void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception {
-            Method annotationMethod = annotation.getClass().getDeclaredMethod("value");
+        Object bind(BindParams params) throws Exception {
+            Method annotationMethod = params.annotation.getClass().getDeclaredMethod("value");
             annotationMethod.setAccessible(true);
-            int[] ids = (int[]) annotationMethod.invoke(annotation);
+            int[] ids = (int[]) annotationMethod.invoke(params.annotation);
             for (int id : ids) {
-                View v = getView(obj, view, id);
+                View v = getView(params.obj, params.view, id);
                 MyOnTouchListener onTouchListener = gestureMap.get(v);
                 if (onTouchListener == null) {
-                    onTouchListener = new MyOnTouchListener(getContext(method, obj, view), obj, v);
+                    onTouchListener = new MyOnTouchListener(appContext, params.obj, v);
                     gestureMap.put(v, onTouchListener);
                 }
-                onTouchListener.putMethod(annotation.annotationType(), method);
+                onTouchListener.putMethod(params.annotation.annotationType(), params.method);
                 v.setOnTouchListener(onTouchListener);
             }
+            return null;
         }
 
         final static class MyOnTouchListener implements View.OnTouchListener {
@@ -733,7 +782,7 @@ public final class LightBinder {
     }
 
     abstract static class Binder {
-        abstract void bind(Annotation annotation, Method method, Field field, Object obj, View view) throws Exception;
+        abstract Object bind(BindParams params) throws Exception;
     }
 
     private static class BaseListener {
@@ -760,6 +809,41 @@ public final class LightBinder {
         }
     }
 
+    private final static class BindParams {
+        Annotation annotation;
+        Method method;
+        Field field;
+        Object obj;
+        View view;
+        Class<?> paramType;
+
+        BindParams(Annotation annotation, Object obj, View view) {
+            this(annotation, obj, null, null, view, null);
+        }
+
+        BindParams(Annotation annotation, Object obj, Method method, View view) {
+            this(annotation, obj, method, null, view, null);
+        }
+
+        BindParams(Annotation annotation, Object obj, Field field, View view) {
+            this(annotation, obj, null, field, view, null);
+        }
+
+        BindParams(Annotation annotation, Object obj, Class<?> paramType) {
+            this(annotation, obj, null, null, null, paramType);
+        }
+
+        BindParams(Annotation annotation, Object obj, Method method, Field field, View view, Class<?> paramType) {
+            this.annotation = annotation;
+            this.obj = obj;
+            this.method = method;
+            this.field = field;
+            this.view = view;
+            this.paramType = paramType;
+        }
+    }
+
+
     private static View getView(Object obj, View view, int id) throws Exception {
         if (view != null && id != View.NO_ID && view.findViewById(id) != null) {
             return view.findViewById(id);
@@ -785,35 +869,47 @@ public final class LightBinder {
         return null;
     }
 
-    private static Context getContext(Method method, Object obj, View view) throws Exception {
-        if (obj instanceof Activity) {
-            return ((Activity) obj).getApplicationContext();
-        }
-        if (obj instanceof View) {
-            return ((View) obj).getContext().getApplicationContext();
-        }
-        if (view != null) {
-            return view.getContext().getApplicationContext();
-        }
-        if (obj instanceof Fragment) {
-            Fragment fragment = ((Fragment) obj);
-            return fragment.getActivity().getApplicationContext();
-        }
-        if (obj instanceof android.support.v4.app.Fragment) {
-            android.support.v4.app.Fragment fragment = ((android.support.v4.app.Fragment) obj);
-            return fragment.getActivity().getApplicationContext();
-        }
-        return null;
-    }
-
     private static Object invoke(Method method, Object obj, Object... params) {
         try {
-            log("Invoke: " + method);
-            return method.invoke(obj, params);
+            long start = System.currentTimeMillis();
+            Object result = method.invoke(obj, assembleParams(method, obj, params));
+            log("Invoke: " + method + " cost(" + (System.currentTimeMillis() - start) + "ms)");
+            return result;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage() == null ? "" : e.getMessage(), e.getCause() == null ? e : e.getCause());
             throw new RuntimeException(e);
         }
+    }
+
+    private static Object[] assembleParams(Method method, Object obj, Object... params) throws Exception {
+        Class<?>[] types = method.getParameterTypes();
+        List<Object> paramsList = new ArrayList<Object>();
+        Annotation[][] annotations = method.getParameterAnnotations();
+        Map<Class<?>, Annotation[]> paramAnnotationMap = new HashMap<>();
+        for (int i = 0, size = types.length; i < size; i++) {
+            paramAnnotationMap.put(types[i], annotations[i]);
+        }
+        for (Class<?> clazz : types) {
+            Annotation[] paramAnnotations = paramAnnotationMap.get(clazz);
+            if (paramAnnotations != null && paramAnnotations.length > 0) {
+                for (Annotation annotation : paramAnnotations) {
+                    Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
+                    if (binder != null) {
+                        paramsList.add(binder.bind(new BindParams(annotation, obj, clazz)));
+                    }
+                }
+                continue;
+            }
+            for (Object o : params) {
+                boolean isAssignable = clazz.isAssignableFrom(o.getClass());
+                boolean isPrimitiveEquals = clazz.isPrimitive() && o.getClass().getName().toLowerCase().contains(clazz.getName().toLowerCase());
+                if (isAssignable || isPrimitiveEquals) {
+                    paramsList.add(o);
+                    break;
+                }
+            }
+        }
+        return paramsList.toArray();
     }
 
     private static void log(String msg) {

@@ -32,6 +32,7 @@ import com.wq.android.lightannotation.annotations.OnCheckedChanged;
 import com.wq.android.lightannotation.annotations.OnClick;
 import com.wq.android.lightannotation.annotations.OnDoubleTap;
 import com.wq.android.lightannotation.annotations.OnDown;
+import com.wq.android.lightannotation.annotations.OnDraw;
 import com.wq.android.lightannotation.annotations.OnFling;
 import com.wq.android.lightannotation.annotations.OnGlobalLayout;
 import com.wq.android.lightannotation.annotations.OnKey;
@@ -43,7 +44,7 @@ import com.wq.android.lightannotation.annotations.OnTextChanged;
 import com.wq.android.lightannotation.annotations.OrientationPortrait;
 import com.wq.android.lightannotation.annotations.SystemService;
 
-import java.util.List;
+import java.util.Collection;
 
 @FullScreen
 @OrientationPortrait
@@ -65,7 +66,7 @@ public class MainActivity extends Activity {
 
     @FindById(R.id.btn_on_double_tap) Button btn;
     @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views;
-    @FindByIds({R.id.btn_click, R.id.btn_long_click}) List<View> views1;
+    @FindByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +77,11 @@ public class MainActivity extends Activity {
         getFragmentManager().beginTransaction().add(new MyFragment(), "").commit();
     }
 
-//    @OnDraw(R.id.root)
-//    private void onDraw(View v) {
-//        //toast("OnDraw");
-//    }
-//
+    @OnDraw(R.id.root)
+    private void onDraw(View v) {
+        //toast("OnDraw");
+    }
+
 //    @OnPreDraw(R.id.root)
 //    private void onPreDraw(View v) {
 //        //toast("OnPreDraw");
@@ -112,7 +113,23 @@ public class MainActivity extends Activity {
     }
 
     @OnClick(R.id.btn_click)
-    private void onClick(View v) {
+    private void onClick(@BindArray(R.array.array) String[] array,
+                         View v,
+                         @BindArray(R.array.string_array) String[] array1,
+                         @BindArray(R.array.int_array) int[] intArray,
+                         @BindColor(R.color.colorAccent) int color,
+                         @BindDimen(R.dimen.activity_horizontal_margin) float margin,
+                         @BindInt(R.integer.test_int) int integer,
+                         @BindString(R.string.app_name) String name,
+                         @BindBool(R.bool.test_bool) boolean bool,
+                         @FindById(R.id.btn_on_double_tap) Button btn,
+                         @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
+                         @FindByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1,
+                         @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager,
+                         @DrawableById(R.mipmap.ic_launcher) Drawable drawable,
+                         @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap,
+                         @Inflate(R.layout.test_inflate) View v1,
+                         @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v2) {
         toast("OnClick");
     }
 

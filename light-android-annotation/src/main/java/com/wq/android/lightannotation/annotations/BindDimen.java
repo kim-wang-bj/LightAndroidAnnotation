@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * @author Wang Qi
  */
 @Documented
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BindDimen {
     int value();

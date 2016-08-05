@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  *         Usage example: </br><code>&#064;Inflate(R.layoutId) private View view;</code>
  */
 @Documented
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Inflate {
     int value();

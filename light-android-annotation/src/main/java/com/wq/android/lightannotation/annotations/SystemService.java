@@ -63,7 +63,7 @@ import java.lang.annotation.Target;
  * @see android.app.usage.NetworkStatsManager
  */
 @Documented
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SystemService {
     String value();
