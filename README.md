@@ -9,8 +9,8 @@
 ### Usage Example
 
 ```java
-//Supports method parameters binding:
- @OnClick(R.id.btn_click)
+    //Supports method parameters binding:
+    @OnClick(R.id.btn_click)
     private void onClick(View v,
                          @BindArray(R.array.array) String[] array,
                          @BindArray(R.array.string_array) String[] array1,
