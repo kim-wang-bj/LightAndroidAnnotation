@@ -84,7 +84,9 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -883,14 +885,12 @@ public final class LightBinder {
 
     private static Object[] assembleParams(Method method, Object obj, Object... params) throws Exception {
         List<Object> result = new ArrayList<Object>();
+        List<Object> paramsList = new ArrayList<Object>(Arrays.asList(params));
         Class<?>[] types = method.getParameterTypes();
         Annotation[][] annotations = method.getParameterAnnotations();
-        Map<Class<?>, Annotation[]> paramAnnotationMap = new HashMap<>();
         for (int i = 0, size = types.length; i < size; i++) {
-            paramAnnotationMap.put(types[i], annotations[i]);
-        }
-        for (Class<?> clazz : types) {
-            Annotation[] paramAnnotations = paramAnnotationMap.get(clazz);
+            Class<?> clazz = types[i];
+            Annotation[] paramAnnotations = annotations[i];
             if (paramAnnotations != null && paramAnnotations.length > 0) {
                 for (Annotation annotation : paramAnnotations) {
                     Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
@@ -901,11 +901,13 @@ public final class LightBinder {
                 }
                 continue;
             }
-            for (Object o : params) {
+            for (Iterator<Object> iterator = paramsList.iterator(); iterator.hasNext(); ) {
+                Object o = iterator.next();
                 boolean isAssignable = clazz.isAssignableFrom(o.getClass());
                 boolean isPrimitiveEquals = clazz.isPrimitive() && o.getClass().getName().toLowerCase().contains(clazz.getName().toLowerCase());
-                if ((isAssignable || isPrimitiveEquals) && !result.contains(o)) {
+                if ((isAssignable || isPrimitiveEquals)) {
                     result.add(o);
+                    iterator.remove();
                     break;
                 }
             }

@@ -124,7 +124,7 @@ public class MainActivity extends Activity {
                          @BindBool(R.bool.test_bool) boolean bool,
                          @FindById(R.id.btn_on_double_tap) Button btn,
                          @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
-                         @FindByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1,
+                         @FindByIds({R.id.btn_click, R.id.btn_down}) Collection<View> views1,
                          @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager,
                          @DrawableById(R.mipmap.ic_launcher) Drawable drawable,
                          @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap,

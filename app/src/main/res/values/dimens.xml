@@ -10,8 +10,8 @@
         <item>1</item>
     </integer-array>
     <string-array name="string_array">
-        <item>test</item>
-        <item>test</item>
-        <item>test</item>
+        <item>test1</item>
+        <item>test1</item>
+        <item>test1</item>
     </string-array>
 </resources>
