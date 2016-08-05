@@ -1,5 +1,7 @@
 package com.wq.android.lightannotation;
 
+import android.util.ArrayMap;
+
 import com.wq.android.lightannotation.LightBinder.ActivityFeatureBinder;
 import com.wq.android.lightannotation.LightBinder.OnCheckedChangedBinder;
 import com.wq.android.lightannotation.LightBinder.OnClickBinder;
@@ -72,14 +74,12 @@ import com.wq.android.lightannotation.annotations.OrientationSensor;
 import com.wq.android.lightannotation.annotations.SystemService;
 
 import java.lang.annotation.Annotation;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by qwang on 2016/8/4.
  */
 final class AnnotationRegister {
-    final static Map<Class<? extends Annotation>, LightBinder.Binder> supportedAnnotations = new HashMap<>();
+    final static ArrayMap<Class<? extends Annotation>, LightBinder.Binder> supportedAnnotations = new ArrayMap<>(49);
 
     static {
         TextWatcherBinder textWatcherBinder = new TextWatcherBinder();
