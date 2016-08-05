@@ -87,6 +87,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -885,7 +886,7 @@ public final class LightBinder {
 
     private static Object[] assembleParams(Method method, Object obj, Object... params) throws Exception {
         List<Object> result = new ArrayList<Object>();
-        List<Object> paramsList = new ArrayList<Object>(Arrays.asList(params));
+        List<Object> paramsList = new LinkedList<>(Arrays.asList(params));
         Class<?>[] types = method.getParameterTypes();
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0, size = types.length; i < size; i++) {
@@ -901,13 +902,12 @@ public final class LightBinder {
                 }
                 continue;
             }
-            for (Iterator<Object> iterator = paramsList.iterator(); iterator.hasNext(); ) {
-                Object o = iterator.next();
+            for (Object o : paramsList) {
                 boolean isAssignable = clazz.isAssignableFrom(o.getClass());
                 boolean isPrimitiveEquals = clazz.isPrimitive() && o.getClass().getName().toLowerCase().contains(clazz.getName().toLowerCase());
-                if ((isAssignable || isPrimitiveEquals)) {
+                if (isAssignable || isPrimitiveEquals) {
                     result.add(o);
-                    iterator.remove();
+                    paramsList.remove(o);
                     break;
                 }
             }
