@@ -113,8 +113,8 @@ public class MainActivity extends Activity {
     }
 
     @OnClick(R.id.btn_click)
-    private void onClick(@BindArray(R.array.array) String[] array,
-                         View v,
+    private void onClick(View v,
+                         @BindArray(R.array.array) String[] array,
                          @BindArray(R.array.string_array) String[] array1,
                          @BindArray(R.array.int_array) int[] intArray,
                          @BindColor(R.color.colorAccent) int color,
