@@ -24,6 +24,7 @@ import com.wq.android.lightannotation.LightBinder.SystemServiceBinder;
 import com.wq.android.lightannotation.LightBinder.TextWatcherBinder;
 import com.wq.android.lightannotation.LightBinder.ViewBinder;
 import com.wq.android.lightannotation.annotations.AfterTextChanged;
+import com.wq.android.lightannotation.annotations.AnimById;
 import com.wq.android.lightannotation.annotations.ArrayById;
 import com.wq.android.lightannotation.annotations.BeforeTextChanged;
 import com.wq.android.lightannotation.annotations.BoolById;
@@ -79,7 +80,7 @@ import java.lang.annotation.Annotation;
  * Created by qwang on 2016/8/4.
  */
 final class AnnotationRegister {
-    final static ArrayMap<Class<? extends Annotation>, LightBinder.Binder> supportedAnnotations = new ArrayMap<>(49);
+    final static ArrayMap<Class<? extends Annotation>, LightBinder.Binder> supportedAnnotations = new ArrayMap<>(50);
 
     static {
         TextWatcherBinder textWatcherBinder = new TextWatcherBinder();
@@ -98,6 +99,7 @@ final class AnnotationRegister {
         supportedAnnotations.put(BitmapById.class, resourceBinder);
         supportedAnnotations.put(DrawableByFile.class, resourceBinder);
         supportedAnnotations.put(DrawableById.class, resourceBinder);
+        supportedAnnotations.put(AnimById.class, resourceBinder);
 
         ViewBinder viewBinder = new ViewBinder();
         supportedAnnotations.put(ViewById.class, viewBinder);
