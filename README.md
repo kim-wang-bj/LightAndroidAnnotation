@@ -64,7 +64,28 @@ public class MainActivity extends Activity {
         Injector.inject(this);
     }
 
-   @OnDraw(R.id.root)
+    @OnClick(R.id.btn_click)
+    private void onClick(View v,
+                     @ArrayById(R.array.array) String[] array,
+                     @ArrayById(R.array.string_array) String[] array1,
+                     @ArrayById(R.array.int_array) int[] intArray,
+                     @ColorById(R.color.colorAccent) int color,
+                     @DimenById(R.dimen.activity_horizontal_margin) float margin,
+                     @IntById(R.integer.test_int) int integer,
+                     @StringById(R.string.app_name) String name,
+                     @BoolById(R.bool.test_bool) boolean bool,
+                     @ViewById(R.id.btn_on_double_tap) Button btn,
+                     @ViewByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
+                     @ViewByIds({R.id.btn_click, R.id.btn_down}) Collection<View> views1,
+                     @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager,
+                     @DrawableById(R.mipmap.ic_launcher) Drawable drawable,
+                     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap,
+                     @Inflate(R.layout.test_inflate) View v1,
+                     @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v2) {
+    // do onClick
+    }
+
+    @OnDraw(R.id.root)
     private void onDraw(View v) {
         //toast("OnDraw");
     }
@@ -97,11 +118,6 @@ public class MainActivity extends Activity {
     @OnTextChanged(R.id.edit_text)
     private void OnTextChanged(View v, CharSequence s, int a, int b, int c) {
         //toast("OnTextChanged");
-    }
-
-    @OnClick(R.id.btn_click)
-    private void onClick(View v) {
-        toast("OnClick");
     }
 
     @OnLongClick(R.id.btn_long_click)
