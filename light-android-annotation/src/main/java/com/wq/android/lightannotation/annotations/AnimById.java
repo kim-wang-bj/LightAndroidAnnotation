@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FindByIds {
-    int[] value();
+public @interface AnimById {
+    int value();
 }

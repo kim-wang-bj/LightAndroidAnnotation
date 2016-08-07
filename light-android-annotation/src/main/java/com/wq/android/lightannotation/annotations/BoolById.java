@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BindArray {
+public @interface BoolById {
     int value();
 }
