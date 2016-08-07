@@ -125,6 +125,7 @@ public final class LightBinder {
         if (obj == null) {
             throw new NullPointerException("Object parameter must not be null !");
         }
+        initContextIfNeed(obj, view);
         try {
             long startTime = System.currentTimeMillis();
             Class clazz = obj.getClass();
@@ -156,6 +157,22 @@ public final class LightBinder {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void initContextIfNeed(Object obj, View view) {
+        if (context == null) {
+            if (view != null) {
+                context = view.getContext().getApplicationContext();
+            } else if (obj instanceof Activity) {
+                context = ((Activity) obj).getApplicationContext();
+            } else if (obj instanceof View) {
+                context = ((View) obj).getContext().getApplicationContext();
+            } else if (obj instanceof Fragment) {
+                context = ((Fragment) obj).getActivity().getApplicationContext();
+            } else if (obj instanceof android.support.v4.app.Fragment) {
+                context = ((android.support.v4.app.Fragment) obj).getActivity().getApplicationContext();
+            }
         }
     }
 
