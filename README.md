@@ -12,17 +12,17 @@
 //Supports method parameters binding:
 @OnClick(R.id.btn_click)
 private void onClick(View v,
-                     @BindArray(R.array.array) String[] array,
-                     @BindArray(R.array.string_array) String[] array1,
-                     @BindArray(R.array.int_array) int[] intArray,
-                     @BindColor(R.color.colorAccent) int color,
-                     @BindDimen(R.dimen.activity_horizontal_margin) float margin,
-                     @BindInt(R.integer.test_int) int integer,
-                     @BindString(R.string.app_name) String name,
-                     @BindBool(R.bool.test_bool) boolean bool,
-                     @FindById(R.id.btn_on_double_tap) Button btn,
-                     @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
-                     @FindByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1,
+                     @ArrayById(R.array.array) String[] array,
+                     @ArrayById(R.array.string_array) String[] array1,
+                     @ArrayById(R.array.int_array) int[] intArray,
+                     @ColorById(R.color.colorAccent) int color,
+                     @DimenById(R.dimen.activity_horizontal_margin) float margin,
+                     @IntById(R.integer.test_int) int integer,
+                     @StringById(R.string.app_name) String name,
+                     @BoolById(R.bool.test_bool) boolean bool,
+                     @ViewById(R.id.btn_on_double_tap) Button btn,
+                     @ViewByIds({R.id.btn_click, R.id.btn_long_click}) View[] views,
+                     @ViewByIds({R.id.btn_click, R.id.btn_down}) Collection<View> views1,
                      @SystemService(Context.ALARM_SERVICE) AlarmManager alarmManager,
                      @DrawableById(R.mipmap.ic_launcher) Drawable drawable,
                      @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap,
@@ -43,18 +43,18 @@ public class MainActivity extends Activity {
     @BitmapById(R.mipmap.ic_launcher) Bitmap bitmap;
     @Inflate(R.layout.test_inflate) View v;
     @Inflate(value = R.layout.test_inflate, parent = R.id.root) View v1;
-    @BindArray(R.array.array) String[] array;
-    @BindArray(R.array.string_array) String[] array1;
-    @BindArray(R.array.int_array) int[] intArray;
-    @BindColor(R.color.colorAccent) int color;
-    @BindDimen(R.dimen.activity_horizontal_margin) float margin;
-    @BindInt(R.integer.test_int) int integer;
-    @BindString(R.string.app_name) String name;
-    @BindBool(R.bool.test_bool) boolean bool;
+    @ArrayById(R.array.array) String[] array;
+    @ArrayById(R.array.string_array) String[] array1;
+    @ArrayById(R.array.int_array) int[] intArray;
+    @ColorById(R.color.colorAccent) int color;
+    @DimenById(R.dimen.activity_horizontal_margin) float margin;
+    @IntById(R.integer.test_int) int integer;
+    @StringById(R.string.app_name) String name;
+    @BoolById(R.bool.test_bool) boolean bool;
 
-    @FindById(R.id.btn_on_double_tap) Button btn;
-    @FindByIds({R.id.btn_click, R.id.btn_long_click}) View[] views;
-    @FindByIds({R.id.btn_click, R.id.btn_long_click}) List<View> views1;
+    @ViewById(R.id.btn_on_double_tap) Button btn;
+    @ViewByIds({R.id.btn_click, R.id.btn_long_click}) View[] views;
+    @ViewByIds({R.id.btn_click, R.id.btn_long_click}) Collection<View> views1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
