@@ -152,21 +152,19 @@ public class MainActivity extends Activity {
 ###Supported Annotations
 ```java
 AfterTextChanged
+AnimById
+ArrayById
 BeforeTextChanged
-BindArray
-BindBool
-BindColor
-BindDimen
-BindInt
-BindString
 BitmapByFile
 BitmapById
+BoolById
+ColorById
+DimenById
 DrawableByFile
 DrawableById
-FindById
-FindByIds
 FullScreen
 Inflate
+IntById
 OnCheckedChanged
 OnClick
 OnContextClick
@@ -199,5 +197,8 @@ OnTouch
 OrientationLandscape
 OrientationPortrait
 OrientationSensor
+StringById
 SystemService
+ViewById
+ViewByIds
 ```
