@@ -156,7 +156,7 @@ public final class LightBinder {
                 Log.i(TAG, "Binding finish: (costs " + (System.currentTimeMillis() - startTime) + "ms)");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getCause() != null ? e.getCause() : e);
         }
     }
 
@@ -779,7 +779,7 @@ public final class LightBinder {
 
         Object innerInvoke(Class<? extends Annotation> annotation, Object... params) {
             Method method = eventMethodMap.get(annotation);
-            if (obj.get() == null || method == null) {
+            if (method == null) {
                 return null;
             }
             return LightBinder.invoke(method, obj.get(), params);
@@ -846,6 +846,9 @@ public final class LightBinder {
             if (obj.get() instanceof View) {
                 return ((View) obj.get()).findViewById(id);
             }
+            if (view == null) {
+                throw new NullPointerException("Find view failed: id=" + Integer.toHexString(id) + ". Wrong view id used.");
+            }
             return null;
         }
     }
@@ -855,7 +858,7 @@ public final class LightBinder {
             long startTime = System.currentTimeMillis();
             Object result = method.invoke(obj, assembleParams(method, obj, params));
             if (DEBUG) {
-                Log.i(TAG, "Invoke " + method.toGenericString() + " (costs " + (System.currentTimeMillis() - startTime) + "ms)");
+                Log.i(TAG, "Invoke ->" + method.toGenericString() + " (costs " + (System.currentTimeMillis() - startTime) + "ms)");
             }
             return result;
         } catch (Exception e) {
@@ -874,9 +877,12 @@ public final class LightBinder {
             Class<?> clazz = types[i];
             Annotation[] paramAnnotations = annotations[i];
             if (paramAnnotations != null && paramAnnotations.length > 0) {
-                Binder binder = AnnotationRegister.supportedAnnotations.get(paramAnnotations[0].annotationType());
-                if (binder != null) {
-                    result.add(binder.bind(new BindParams(paramAnnotations[0], obj, clazz)));
+                for (Annotation annotation : paramAnnotations) {
+                    Binder binder = AnnotationRegister.supportedAnnotations.get(annotation.annotationType());
+                    if (binder != null) {
+                        result.add(binder.bind(new BindParams(annotation, obj, clazz)));
+                        break;
+                    }
                 }
                 continue;
             }
